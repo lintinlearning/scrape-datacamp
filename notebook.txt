@@ -37,7 +37,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Create the request\n",
                 "response = client.chat.completions.create(\n",
@@ -89,7 +89,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Use the try statement\n",
                 "try: \n",
@@ -137,7 +137,7 @@
                 "from tenacity import (retry, stop_after_attempt, wait_random_exponential)\n",
                 "\n",
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Add the appropriate parameters to the decorator\n",
                 "@retry(wait=wait_random_exponential(min=5, max=40), stop=stop_after_attempt(4))\n",
@@ -189,7 +189,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "messages = []\n",
                 "# Provide a system message and user messages to send the batch\n",
@@ -236,7 +236,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "input_message = {\"role\": \"user\", \"content\": \"I'd like to buy a shirt and a jacket. Can you suggest two color pairings for these items?\"}\n",
                 "\n",
                 "# Use tiktoken to create the encoding for your model\n",
@@ -286,7 +286,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "response= client.chat.completions.create(\n",
                 "    model=\"gpt-3.5-turbo\",\n",
@@ -334,7 +334,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Define the function parameter type\n",
                 "function_definition[0]['function']['parameters']['type'] = 'object'\n",
@@ -387,7 +387,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "response = get_response(messages, function_definition)\n",
                 "\n",
@@ -441,7 +441,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Append the second function\n",
                 "function_definition.append({'type': 'function', 'function':{'name': 'reply_to_review', 'description': 'Reply politely to the customer who wrote the review', 'parameters': {'type': 'object', 'properties': {'reply': {'type': 'string','description': 'Reply to post in response to the review'}}}}})\n",
@@ -485,7 +485,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "response= client.chat.completions.create(\n",
                 "    model=model,\n",
@@ -536,7 +536,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Modify the messages\n",
                 "messages.append({\"role\": \"system\", \"content\": \"Don't make assumptions about what values to plug into functions.\"})\n",
@@ -584,7 +584,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Define the function to pass to tools\n",
                 "function_definition = [{\"type\": \"function\",\n",
@@ -632,7 +632,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Call the Chat Completions endpoint \n",
                 "response = client.chat.completions.create(\n",
@@ -732,7 +732,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "message = \"Can you show some example sentences in the past tense in French?\"\n",
                 "\n",
@@ -774,7 +774,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "user_request = \"Can you recommend a good restaurant in Berlin?\"\n",
                 "\n",
@@ -825,7 +825,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "messages = [{'role': 'system', 'content': 'You are a personal finance assistant.'},\n",
                 "    {'role': 'user', 'content': 'How can I make a plan to save $800 for a trip?'},\n",
@@ -872,7 +872,7 @@
             "outputs": [],
             "source": [
                 "# Set up your OpenAI API key\n",
-                "client = OpenAI(api_key=\"<OPENAI_API_TOKEN>\")\n",
+                "client = OpenAI()\n",
                 "\n",
                 "# Generate a unique ID\n",
                 "unique_id = str(uuid.uuid4())\n",
