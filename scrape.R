@@ -3,7 +3,7 @@ library(rvest)
 
 course_url <- paste0(
     "https://www.datacamp.com/courses/",
-    "transactions-and-error-handling-in-postgresql"
+    "developing-ai-systems-with-the-openai-api"
 )
 
 exercises <- course_url %>%
