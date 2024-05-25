@@ -1,25 +1,20 @@
-# Developing AI Systems with the OpenAI API
+# Introduction to Deep Learning with PyTorch
 
-## Structuring End-to-End Applications
+## Introduction to PyTorch, a Deep Learning Library
 
-### Formatting model response as JSON
+### Creating tensors and accessing attributes
 
-As a librarian cataloging new books, you aim to leverage the OpenAI API
-to automate the creation of a JSON file from text notes you received
-from a colleague. Your task is to extract relevant information such as
-book titles and authors and to do this, you use the OpenAI API to
-convert the text notes, that include book titles and authors, into
-structured JSON files.
+Tensors are the primary data structure in PyTorch and will be the
+building blocks for our deep learning models. They share many
+similarities with NumPy arrays but have some unique attributes too.
 
-In this and all the following exercises, the `openai` library has
-already been loaded.
+In this exercise, you'll practice creating a tensor from a Python list
+and displaying some of its attributes.
 
 **Instructions**
 
-- Set up your API key.
-- Create a request to the Chat Completions endpoint.
-- Specify that the request should use the `json_object` response format.
-- Extract and print the model response.
+- Begin by importing PyTorch.
+- Create a tensor from the Python list `list_a`.
 
 **Answer**
 
@@ -27,27 +22,22 @@ already been loaded.
 
 ```
 
-### Handling exceptions
+### Creating tensors from NumPy arrays
 
-You are working at a logistics company on developing an application that
-uses the OpenAI API to check the shipping address of your top three
-customers. The application will be used internally and you want to make
-sure that other teams are presented with an easy to read message in case
-of error.
+Tensors are the fundamental data structure of PyTorch. You can create
+complex deep learning algorithms by learning how to manipulate them.
 
-To address this requirement, you decide to print a custom message in
-case the users fail to provide a valid key for authentication, and use a
-`try` and `except` block to handle that.
-
-The `message` variable has already been imported.
+The `torch` package has been imported, and two NumPy arrays have been
+created, named `array_a` and `array_b`. Both arrays have the same
+dimensions.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Use the `try` statement to attempt making a request to the API.
-- Print the response if the request succeeds.
-- Use the `except` statement to handle the authentication error that may
-  occur.
+- Create two tensors, `tensor_a` and `tensor_b`, from the NumPy arrays
+  `array_a` and `array_b`, respectively.
+- Subtract `tensor_b` from `tensor_a`.
+- Perform an element-wise multiplication of `tensor_a` and `tensor_b`.
+- Add the resulting tensors from the two previous steps together.
 
 **Answer**
 
@@ -55,21 +45,21 @@ The `message` variable has already been imported.
 
 ```
 
-### Avoiding rate limits with retry
+### Your first neural network
 
-You've created a function to run Chat Completions with a custom message
-but have noticed it sometimes fails due to rate limits. You decide to
-use the `@retry` decorator from the `tenacity` library to avoid errors
-when possible.
+In this exercise, you will implement a small neural network containing
+two **linear** layers. The first layer takes an eight-dimensional input,
+and the last layer outputs a one-dimensional tensor.
+
+The `torch` package and the `torch.nn` package have already been
+imported for you.
 
 **Instructions**
 
-- Import the `tenacity` library with required functions: `retry`,
-  `wait_random_exponential`, and `stop_after_attempt`.
-- Set up your OpenAI API key.
-- Complete the retry decorators with the parameters required to start
-  retrying at an interval of 5 seconds, up to 40 seconds, and to stop
-  after 4 attempts.
+- Create a neural network of linear layers that takes a tensor of
+  dimensions \\1\times8\\ as input and outputs a tensor of dimensions
+  \\1\times1\\.
+- Use any output dimension for the first layer you want.
 
 **Answer**
 
@@ -77,30 +67,28 @@ when possible.
 
 ```
 
-### Batching messages
+### The sigmoid and softmax functions
 
-You are developing a fitness application to track running and cycling
-training, but find out that all your customers' distances have been
-measured in kilometers, and you'd like to have them also converted to
-miles.
+The sigmoid and softmax functions are two of the most popular activation
+functions in deep learning. They are both usually used as the last step
+of a neural network. Sigmoid functions are used for binary
+classification problems, whereas softmax functions are often used for
+multi-class classification problems. This exercise will familiarize you
+with creating and using both functions.
 
-You decide to use the OpenAI API to send requests for each measurement,
-but want to avoid using a for loop that would send too many requests.
-You decide to send the requests in batches, specifying a `system`
-message that asks to convert each of the measurements from
-**kilometers** to **miles** and present the results in a **table**
-containing both the original and converted measurements.
+Let's say that you have a neural network that returned the values
+contained in the `score` tensor as a pre-activation output. You will
+apply activation functions to this output.
 
-The `measurements` list (containing a list of floats) and the
-`get_response()` function have already been imported.
+`torch.nn` is already imported as `nn`.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Provide a system message to request a response with all measurements
-  as a **table** (make sure you specify that they are in **kilometers**
-  and should be converted into **miles**).
-- Append one `user` message per measurement to the `messages` list.
+Create a sigmoid function and apply it on `input_tensor` to generate a
+probability.
+
+Create a softmax function and apply it on `input_tensor` to generate a
+probability.
 
 **Answer**
 
@@ -108,23 +96,27 @@ The `measurements` list (containing a list of floats) and the
 
 ```
 
-### Setting token limits
+## Training Our First Neural Network with PyTorch
 
-An e-commerce platform just hired you to improve the performance of
-their customer service bot built using the OpenAI API. You've decided to
-start by ensuring that the input messages do not cause any rate limit
-issue by setting a limit of 100 tokens, and test it with a sample input
-message.
+### Building a binary classifier in PyTorch
 
-The `tiktoken` library has been preloaded.
+Recall that a small neural network with a single linear layer followed
+by a sigmoid function is a binary classifier. It acts just like a
+logistic regression.
+
+In this exercise, you'll practice building this small network and
+interpreting the output of the classifier.
+
+The `torch` package and the `torch.nn` package have already been
+imported for you.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Use the `tiktoken` library to create an encoding for the
-  `gpt-3.5-turbo` model.
-- Check for the expected number of tokens in the input message.
-- Print the response if the message passes both checks.
+- Create a neural network that takes a tensor of dimensions 1x8 as
+  input, and returns an output of the correct shape for binary
+  classification.
+- Pass the output of the linear layer to a sigmoid, which both takes in
+  and return a single float.
 
 **Answer**
 
@@ -132,25 +124,26 @@ The `tiktoken` library has been preloaded.
 
 ```
 
-## Function Calling
+### From regression to multi-class classification
 
-### Using the tools parameter
+Recall that the models we have seen for binary classification,
+multi-class classification and regression have all been similar, barring
+a few tweaks to the model.
 
-You are developing an AI application for a real estate agency and have
-been asked to extract some key data from listings: house type, location,
-price, number of bedrooms. Use the Chat Completions endpoint with
-function calling to extract the information.
-
-The `message_listing` message, containing the real estate listing, and
-`function_definition`, containing the function to call defined as a tool
-to be passed to the model, have been preloaded.
+In this exercise, you'll start by building a model for regression, and
+then tweak the model to perform a multi-class classification.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Add the preloaded message, `message_listing`.
-- Add the function definition, `function_definition`.
-- Print the response.
+- Create a neural network with exactly four linear layers, which takes
+  the input tensor as input, and outputs a regression value, using any
+  shapes you like for the hidden layers.
+
+<!-- -->
+
+- A similar neural network to the one you just built is provided,
+  containing four linear layers; update this network to perform a
+  multi-class classification with four outputs.
 
 **Answer**
 
@@ -158,25 +151,25 @@ to be passed to the model, have been preloaded.
 
 ```
 
-### Building a function dictionary
+### Creating one-hot encoded labels
 
-You are working on a research project where you need to extract key
-information from a collection of scientific research papers. The goal is
-to create a summary of key information from the papers you are given,
-that includes the title and year of publication. To compile this, you
-decide to use the OpenAI API with function calling to extract the key
-information.
+One-hot encoding is a technique that turns a single integer label into a
+vector of N elements, where N is the number of classes in your dataset.
+This vector only contains zeros and ones. In this exercise, you'll
+create the one-hot encoded vector of the label `y` provided.
 
-The `get_response()` function and `messages`, containing the text of the
-research paper, have been preloaded. The `function_definition` variable
-has also partially been filled already.
+You'll practice doing this manually, and then make your life easier by
+leveraging the help of PyTorch! Your dataset contains three classes.
+
+NumPy is already imported as `np`, and `torch.nn.functional` as `F`. The
+`torch` package is also imported.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Define the function `'type'` parameter.
-- Define the `'properties'` parameters to extract the **title** and
-  **year of publication** from research papers.
+- Manually create a one-hot encoded vector of the ground truth label `y`
+  by filling in the NumPy array provided.
+- Create a one-hot encoded vector of the ground truth label `y` using
+  PyTorch.
 
 **Answer**
 
@@ -184,30 +177,28 @@ has also partially been filled already.
 
 ```
 
-### Extracting the response
+### Calculating cross entropy loss
 
-You work for a company that has just launched a new smartphone. The
-marketing team has collected customer reviews from various online
-platforms and wants to analyze the feedback to understand the customer
-sentiment and the most talked-about features of the smartphone. To
-accelerate this, you've used the OpenAI API to extract structured data
-from these reviews, using function calling. You now need to write a
-function to clean the output and return a dictionary of the response
-from the function only.
+Cross entropy loss is the most used loss for classification problems. In
+this exercise, you will create inputs and calculate cross entropy loss
+in PyTorch. You are provided with the ground truth label `y` and a
+vector of `scores` predicted by your model.
 
-The `get_response()` function, `messages` variable (containing the
-review) and `function_definition` (containing the function to extract
-sentiment and product features from reviews) have been preloaded. Notice
-that both `messages` and `function_definition` can be passed as
-arguments to the `get_response()` function to get the response from the
-chat completions endpoint.
+You'll start by creating a one-hot encoded vector of the ground truth
+label `y`, which is a required step to compare `y` with the scores
+predicted by your model. Next, you'll create a cross entropy loss
+function. Last, you'll call the loss function, which takes `scores`
+(model predictions before the final softmax function), and the one-hot
+encoded ground truth label, as inputs. It outputs a single float, the
+loss of that sample.
+
+`torch`, `torch.nn` as `nn`, and `torch.nn.functional` as `F` have
+already been imported for you.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Define a function to return the dictionary containing the output data,
-  as found in the response under `arguments`.
-- Print the dictionary.
+- Create the one-hot encoded vector of the ground truth label `y` and
+  assign it to `one_hot_label`.
 
 **Answer**
 
@@ -215,33 +206,35 @@ chat completions endpoint.
 
 ```
 
-### Parallel function calling
+### Estimating a sample
 
-After extracting the data from customers' reviews for the marketing
-team, the company you're working for asks you if there's a way to
-generate a response to the customer that they can post on their review
-platform. You decide to use parallel function calling to apply both
-functions and generate data as well as the responses. You use a function
-named `reply_to_review` and ask to return the review reply as a `reply`
-property.
+In previous exercises, you used linear layers to build networks.
 
-In this and the following two exercises in this chapter the model used
-is `gpt-3.5-turbo-1106`, as other models may not support parallel
-function calling.
+Recall that the operation performed by `nn.Linear()` is to take an input
+\\X\\ and apply the transformation \\W\*X + b\\ ,where \\W\\ and \\b\\
+are two tensors (called the weight and bias).
 
-In this exercise, the `get_response()` function, `messages` and
-`function_definition` variable have been preloaded. The `messages`
-already contain the user's review, and `function_definition` contains
-the function asking to extract structured data.
+A critical part of training PyTorch models is to calculate gradients of
+the weight and bias tensors with respect to a loss function.
+
+In this exercise, you will calculate weight and bias tensor gradients
+using cross entropy loss and a sample of data.
+
+The following tensors are provded:
+
+- `weight`: a \\2 \times 9\\-element tensor
+- `bias`: a \\2\\-element tensor
+- `preds`: a \\1 \times 2\\-element tensor containing the model
+  predictions
+- `target`: a \\1 \times 2\\-element one-hot encoded tensor containing
+  the ground-truth label
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Append to the function definition to return the additional message
-  responding to the customer review: the function should have `name`,
-  `description` and `parameters` specified, and the parameters should be
-  `type` and `properties`.
-- Print the response.
+- Use the criterion you have defined to calculate the loss value with
+  respect to the predictions and target values.
+- Compute the gradients of the cross entropy loss.
+- Display the gradients of the weight and bias tensors, in that order.
 
 **Answer**
 
@@ -249,24 +242,19 @@ the function asking to extract structured data.
 
 ```
 
-### Setting a specific function
+### Accessing the model parameters
 
-You have been given a few customer reviews to analyze, and have been
-asked to extract for each one the product name, variant, and customer
-sentiment. To ensure that the model extracts this specific information,
-you decide to use function calling and specify the function for the
-model to use. Use the Chat Completions endpoint with function calling
-and `tool_choice` to extract the information.
-
-In this exercise, the `messages` and `function_definition` have been
-preloaded.
+A PyTorch model created with the `nn.Sequential()` is a module that
+contains the different layers of your network. Recall that each layer
+parameter can be accessed by indexing the created model directly. In
+this exercise, you will practice accessing the parameters of different
+**linear** layers of a neural network. You won't be accessing the
+sigmoid.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Add your function definition as tools.
-- Set the `extract_review_info` function to be called for the response.
-- Print the response.
+- Access the `weight` parameter of the first **linear** layer.
+- Access the `bias` parameter of the second **linear** layer.
 
 **Answer**
 
@@ -274,27 +262,22 @@ preloaded.
 
 ```
 
-### Avoiding inconsistent responses
+### Updating the weights manually
 
-The team you were working with on the previous project is enthusiastic
-about the reply generator and asks you if more reviews can be processed.
-However, some reviews have been mixed up with other documents, and
-you're being asked not to return responses if the text doesn't contain a
-review, or relevant information. For example, the review you're
-considering now doesn't contain a product name, and so there should be
-no product name being returned.
+Now that you know how to access weights and biases, you will manually
+perform the job of the PyTorch optimizer. PyTorch functions can do what
+you're about to do, but it's helpful to do the work manually at least
+once, to understand what's going on under the hood.
 
-In this exercise, the `get_response()` function, and `messages` and
-`function_definition` variables have been preloaded. The `messages`
-already contain the user's review, and `function_definition` contains
-the two functions: one asking to extract structured data, and one asking
-to generate a reply.
+A neural network of three layers has been created and stored as the
+`model` variable. This network has been used for a forward pass and the
+loss and its derivatives have been calculated. A default learning rate,
+`lr`, has been chosen to scale the gradients when performing the update.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Modify the `messages` to ask the model **not** to assume any values
-  for the responses.
+- Create the gradient variables by accessing the local gradients of each
+  weight tensor.
 
 **Answer**
 
@@ -302,29 +285,29 @@ to generate a reply.
 
 ```
 
-### Defining a function with external APIs
+### Using the PyTorch optimizer
 
-You are developing a flight simulation application and have been asked
-to develop a system that provides specific information about airports
-mentioned in users' requests. You decide to use the OpenAI API to
-convert the user request into airport codes, and then call the
-[AviationAPI](https://docs.aviationapi.com/) to return the information
-requested. As the first step in your coding project, you configure the
-function to pass to the `tools` parameter in the Chat Completions
-endpoint.
+In the previous exercise, you manually updated the weight of a network.
+You now know what's going on under the hood, but this approach is not
+scalable to a network of many layers.
 
-In this exercise, the `get_airport_info()` and `get_response()`
-functions have been preloaded. The `get_airport_info()` function uses
-the `AviationAPI` and takes as input one airport code, returning the
-response with the requested airport information.
+Thankfully, the PyTorch SGD optimizer does a similar job in a handful of
+lines of code. In this exercise, you will practice the last step to
+complete the training loop: updating the weights using a PyTorch
+optimizer.
+
+A neural network has been created and provided as the `model` variable.
+This model was used to run a forward pass and create the tensor of
+predictions `pred`. The one-hot encoded tensor is named `target` and the
+cross entropy loss function is stored as `criterion`.
+
+`torch.optim` as `optim`, and `torch.nn` as `nn` have already been
+loaded for you.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Define the function to pass to tools: that should include the function
-  `'name'` for the function, a `'description'` specifying that a
-  matching airport code should be returned, and `'parameters'` and
-  `'result'` details.
+- Use `optim` to create an SGD optimizer with a learning rate of your
+  choice (must be less than one) for the `model` provided.
 
 **Answer**
 
@@ -332,25 +315,22 @@ response with the requested airport information.
 
 ```
 
-### Calling an external API
+### Using the MSELoss
 
-Now that you have a clearly structured function definition, you move on
-to improving your endpoint request. You use the Chat Completions
-endpoint and pass a `system` message to ensure that the AI assistant is
-aware that it is in the aviation space and that it needs to extract the
-corresponding airport code based on the user input.
+Recall that we can't use cross-entropy loss for regression problems. The
+mean squared error loss (MSELoss) is a common loss function for
+regression problems. In this exercise, you will practice calculating and
+observing the loss using NumPy as well as its PyTorch implementation.
 
-In this exercise, the `get_airport_info()` function has been preloaded.
-The `get_airport_info()` function uses the `AviationAPI` and takes as
-input one airport code, returning the response with the requested
-airport information. The `print_response()` function has also been
-preloaded to print the output.
+The `torch` package has been imported as well as `numpy` as `np` and
+`torch.nn` as `nn`.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Call the Chat Completions endpoint and ensure the `system` is provided
-  with instructions on how to handle the prompt.
+- Calculate the MSELoss using NumPy.
+- Create a MSELoss function using PyTorch.
+- Convert `y_hat` and `y` to tensors and then float data types, and then
+  use them to calculate MSELoss using PyTorch as `mse_pytorch`.
 
 **Answer**
 
@@ -358,24 +338,33 @@ preloaded to print the output.
 
 ```
 
-### Handling the response with external API calls
+### Writing a training loop
 
-To better connect your flight simulation application to other systems,
-you'd like to add some checks to make sure that the model has found an
-appropriate answer. First you check that the response has been produced
-via `tool_calls`. If that is the case, you check that the function used
-to produce the result was `get_airport_info`. If so, you load the
-airport code extracted from the user's prompt, and call the
-`get_airport_info()` function with the code as argument. Finally, if
-that produces a response, you return the response.
+In `scikit-learn`, the whole training loop is contained in the `.fit()`
+method. In PyTorch, however, you implement the loop manually. While this
+provides control over loop's content, it requires a custom
+implementation.
 
-In this exercise, the `response`, the `json` library, and
-`get_airport_info()` function have been preloaded.
+You will write a training loop every time you train a deep learning
+model with PyTorch, which you'll practice in this exercise. The
+`show_results()` function provided will display some sample ground truth
+and the model predictions.
+
+The package imports provided are: pandas as `pd`, `torch`, `torch.nn` as
+`nn`, `torch.optim` as `optim`, as well as `DataLoader` and
+`TensorDataset` from `torch.utils.data`.
+
+The following variables have been created: `dataloader`, containing the
+dataloader; `model`, containing the neural network; `criterion`,
+containing the loss function, `nn.MSELoss()`; `optimizer`, containing
+the SGD optimizer; and `num_epochs`, containing the number of epochs.
 
 **Instructions**
 
-- Check that the response has been produced via `tool_calls`.
-- Extract the function if the previous check passed.
+- Write a for loop that iterates over the `dataloader`; this should be
+  nested within a for loop that iterates over a range equal to the
+  number of epochs.
+- Set the gradients of the optimizer to zero.
 
 **Answer**
 
@@ -383,21 +372,24 @@ In this exercise, the `response`, the `json` library, and
 
 ```
 
-## Best Practices for Production Applications
+## Neural Network Architecture and Hyperparameters
 
-### Moderation API
+### Implementing ReLU
 
-You are developing a chatbot that provides educational content to learn
-languages. You'd like to make sure that users don't post inappropriate
-content to your API, and decide to use the moderation API to check
-users' prompts before generating the response.
+The rectified linear unit (or ReLU) function is one of the most common
+activation functions in deep learning.
+
+It overcomes the training problems linked with the sigmoid function you
+learned, such as the **vanishing gradients problem**.
+
+In this exercise, you'll begin with a ReLU implementation in PyTorch.
+Next, you'll calculate the gradients of the function.
+
+The `nn` module has already been imported for you.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Use the moderation API to check the user message for inappropriate
-  content within `categories`.
-- Print the response.
+- Create a ReLU function in PyTorch.
 
 **Answer**
 
@@ -405,22 +397,26 @@ users' prompts before generating the response.
 
 ```
 
-### Adding guardrails
+### Implementing leaky ReLU
 
-You are developing a chatbot that provides advice for tourists visiting
-Rome. You've been asked to keep the topics limited to only covering
-questions about **food and drink, attractions, history and things to do
-around the city**. For any other topic, the chatbot should apologize and
-say 'Apologies, but I am not allowed to discuss this topic.'.
+You've learned that ReLU is one of the most used activation functions in
+deep learning. You will find it in modern architecture. However, it does
+have the inconvenience of outputting null values for negative inputs and
+therefore, having null gradients. Once an element of the input is
+negative, it will be set to zero for the rest of the training. Leaky
+ReLU overcomes this challenge by using a multiplying factor for negative
+inputs.
+
+In this exercise, you will implement the leaky ReLU function in NumPy
+and PyTorch and practice using it. The `numpy` as `np` package, the
+`torch` package as well as the `torch.nn` as `nn` have already been
+imported.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Write a `user` message with the `user_request` given, and a `system`
-  message to tell the model to assess the question first: if it is
-  allowed, provide a reply, otherwise provide the message: 'Apologies,
-  but I am not allowed to discuss this topic.'.
-- Print the response.
+- Create a leaky ReLU function in PyTorch with a negative slope of 0.05.
+- Call the function on the tensor `x`, which has already been defined
+  for you.
 
 **Answer**
 
@@ -428,26 +424,22 @@ say 'Apologies, but I am not allowed to discuss this topic.'.
 
 ```
 
-### Adversarial testing
+### Counting the number of parameters
 
-You are developing a chatbot designed to assist users with personal
-finance management. The chatbot should be able to handle a variety of
-finance-related queries, from budgeting advice to investment
-suggestions. You have one example where a user is planning to go on
-vacation, and is budgeting for the trip.
+Deep learning models are famous for having a lot of parameters. Recent
+language models have billions of parameters. With more parameters comes
+more computational complexity and longer training times, and a deep
+learning practitioner must know how many parameters their model has.
 
-As the chatbot is only designed to respond to personal finance
-questions, you want to ensure that it is robust and can handle
-unexpected or adversarial inputs without failing or providing incorrect
-information, so you decide to test it by asking the model to ignore all
-financial advice and suggest ways to spend the budget instead of saving
-it.
+In this exercise, you will calculate the number of parameters in your
+model, first using PyTorch then manually.
+
+The `torch.nn` package has been imported as `nn`.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Test the chatbot with an adversarial input that asks to **spend** the
-  **\$800** instead.
+- Iterate through the model's parameters to update the total variable
+  with the total number of parameters in the model.
 
 **Answer**
 
@@ -455,23 +447,312 @@ it.
 
 ```
 
-### Including end-user IDs
+### Manipulating the capacity of a network
 
-You are developing a content moderation tool for a social media company
-that uses the OpenAI API to assess their content. To ensure the safety
-and compliance of the tool, you need to incorporate user identification
-in your API requests, so that investigations can be performed in case
-malicious content is found.
+In this exercise, you will practice creating neural networks with
+different capacities. The capacity of a network reflects the number of
+parameters in said network. To help you, a `calculate_capacity()`
+function has been implemented, as follows:
 
-The `uuid` library has been preloaded. A `message` has also been
-preloaded containing text from a social media post.
+    def calculate_capacity(model):
+      total = 0
+      for p in model.parameters():
+        total += p.numel()
+      return total
+
+This function returns the number of parameters in the your model.
+
+The dataset you are training this network on has `n_features` features
+and `n_classes` classes. The `torch.nn` package has been imported as
+`nn`.
 
 **Instructions**
 
-- Set up your OpenAI API key.
-- Use the `uuid` library with `uuid4()` to generate a unique ID.
-- Pass the unique ID to the chat completions endpoint to identify the
-  user.
+Create a neural network with exactly three linear layers and less than
+120 parameters, which takes `n_features` as inputs and outputs
+`n_classes`.
+
+Create a neural network with exactly four linear layers and more than
+120 parameters, which takes `n_features` as inputs and outputs
+`n_classes`.
+
+**Answer**
+
+```{python}
+
+```
+
+### Experimenting with learning rate
+
+In this exercise, your goal is to find the optimal learning rate such
+that the optimizer can find the minimum of the non-convex function
+\\x^{4} + x^{3} - 5x^{2}\\ in ten steps.
+
+You will experiment with three different learning rate values. For this
+problem, try learning rate values between 0.001 to 0.1.
+
+You are provided with the `optimize_and_plot()` function that takes the
+learning rate for the first argument. This function will run 10 steps of
+the SGD optimizer and display the results.
+
+**Instructions**
+
+- Try a small learning rate value such that the optimizer isn't able to
+  get past the first minimum on the right.
+
+<!-- -->
+
+- Try a large learning rate value such that the optimizer skips past the
+  global minimum at -2.
+
+<!-- -->
+
+- Based on the previous results, try a better learning rate value.
+
+**Answer**
+
+```{python}
+
+```
+
+### Experimenting with momentum
+
+In this exercise, your goal is to find the optimal momentum such that
+the optimizer can find the minimum of the following non-convex function
+\\x^{4} + x^{3} - 5x^{2}\\ in 20 steps. You will experiment with two
+different momentum values. For this problem, the learning rate is fixed
+at 0.01.
+
+You are provided with the `optimize_and_plot()` function that takes the
+learning rate for the first argument. This function will run 20 steps of
+the SGD optimizer and display the results.
+
+**Instructions**
+
+- Try a first value for the momentum such that the optimizer gets stuck
+  in the first minimum.
+
+<!-- -->
+
+- Try a second value for the momentum such that the optimizer finds the
+  global optimum.
+
+**Answer**
+
+```{python}
+
+```
+
+### Freeze layers of a model
+
+You are about to fine-tune a model on a new task after loading
+pre-trained weights. The model contains three linear layers. However,
+because your dataset is small, you only want to train the last linear
+layer of this model and freeze the first two linear layers.
+
+The model has already been created and exists under the variable
+`model`. You will be using the `named_parameters` method of the model to
+list the parameters of the model. Each parameter is described by a name.
+This name is a string with the following naming convention: `x.name`
+where `x` is the index of the layer.
+
+Remember that a linear layer has two parameters: the `weight` and the
+`bias`.
+
+**Instructions**
+
+- Use an `if` statement to determine if the parameter should be frozen
+  or not based on its name.
+- Freeze the parameters of the first two layers of this model.
+
+**Answer**
+
+```{python}
+
+```
+
+### Layer initialization
+
+The initialization of the weights of a neural network has been the focus
+of researchers for many years. When training a network, the method used
+to initialize the weights has a direct impact on the final performance
+of the network.
+
+As a machine learning practitioner, you should be able to experiment
+with different initialization strategies. In this exercise, you are
+creating a small neural network made of two layers and you are deciding
+to initialize each layer's weights with the uniform method.
+
+**Instructions**
+
+- For each layer (`layer0` and `layer1`), use the uniform initialization
+  method to initialize the weights.
+
+**Answer**
+
+```{python}
+
+```
+
+## Evaluating and Improving Models
+
+### Using the TensorDataset class
+
+In practice, loading your data into a PyTorch dataset will be one of the
+first steps you take in order to create and train a neural network with
+PyTorch.
+
+The `TensorDataset` class is very helpful when your dataset can be
+loaded directly as a NumPy array. Recall that `TensorDataset()` can take
+one or more NumPy arrays as input.
+
+In this exercise, you'll practice creating a PyTorch dataset using the
+TensorDataset class.
+
+`torch` and `numpy` have already been imported for you, along with the
+`TensorDataset` class.
+
+**Instructions**
+
+- Convert the NumPy arrays provided to PyTorch tensors.
+- Create a TensorDataset using the `torch_features` and the
+  `torch_target` tensors provided (in this order).
+- Return the last element of the dataset.
+
+**Answer**
+
+```{python}
+
+```
+
+### From data loading to running a forward pass
+
+In this exercise, you'll create a PyTorch `DataLoader` from a pandas
+DataFrame and call a model on this dataset. Specifically, you'll run a
+**forward pass** on a neural network. You'll continue working with fully
+connected neural networks, as you have done so far.
+
+You'll begin by subsetting a loaded DataFrame called `dataframe`,
+converting features and targets NumPy arrays, and converting to PyTorch
+tensors in order to create a PyTorch dataset.
+
+This dataset can be loaded into a PyTorch `DataLoader`, batched,
+shuffled, and used to run a forward pass on a custom fully connected
+neural network.
+
+NumPy as `np`, pandas as `pd`, `torch`, `TensorDataset()`, and
+`DataLoader()` have been imported for you.
+
+**Instructions**
+
+- Extract the features (`ph`, `Sulfate`, `Conductivity`,
+  `Organic_carbon`) and target (`Potability`) values and load them into
+  the appropriate tensors to represent features and targets.
+- Use both tensors to create a PyTorch dataset using the dataset class
+  that's quickest to use when tensors don't require any additional
+  preprocessing.
+
+**Answer**
+
+```{python}
+
+```
+
+### Writing the evaluation loop
+
+In this exercise, you will practice writing the evaluation loop. Recall
+that the evaluation loop is similar to the training loop, except that
+you will not perform the gradient calculation and the optimizer step.
+
+The `model` has already been defined for you, along with the object
+`validationloader`, which is a dataset.
+
+**Instructions**
+
+- Set the model to evaluation mode.
+- Sum the current batch loss to the `validation_loss` variable.
+
+**Answer**
+
+```{python}
+
+```
+
+### Calculating accuracy using torchmetrics
+
+In addition to the losses, you should also be keeping track of the
+accuracy during training. By doing so, you will be able to select the
+epoch when the model performed the best.
+
+In this exercise, you will practice using the `torchmetrics` package to
+calculate the accuracy. You will be using a sample of the facemask
+dataset. This dataset contains three different classes. The
+`plot_errors` function will display samples where the model predictions
+do not match the ground truth. Performing such error analysis will help
+you understand your model failure modes.
+
+The `torchmetrics` package is already imported. The model `outputs` are
+the probabilities returned by a softmax as the last step of the model.
+The `labels` tensor contains the labels as one-hot encoded vectors.
+
+**Instructions**
+
+- Create an accuracy metric for a `"multiclass"` problem with three
+  classes.
+- Calculate the accuracy for each batch of the dataloader.
+
+**Answer**
+
+```{python}
+
+```
+
+### Experimenting with dropout
+
+The dropout layer randomly zeroes out elements of the input tensor.
+Doing so helps fight overfitting. In this exercise, you'll create a
+small neural network with at least two linear layers, two dropout
+layers, and two activation functions.
+
+The `torch.nn` package has already been imported as `nn`. An
+`input_tensor` of dimensions \\1 \times 3072\\ has been created for you.
+
+**Instructions**
+
+- Create a small neural network with one linear layer, one ReLU
+  function, and one dropout layer, in that order.
+- The model should take `input_tensor` as input and return an output of
+  size 16.
+
+<!-- -->
+
+- Using the same neural network, set the probability of zeroing out
+  elements in the dropout layer to `0.8`.
+
+**Answer**
+
+```{python}
+
+```
+
+### Implementing random search
+
+Hyperparameter search is a computationally costly approach to experiment
+with different hyperparameter values. However, it can lead to
+performance improvements. In this exercise, you will implement a random
+search algorithm.
+
+You will randomly sample 10 values of the learning rate and momentum
+from the uniform distribution. To do so, you will use the
+`np.random.uniform()` function.
+
+The `numpy` package has already been imported as `np`.
+
+**Instructions**
+
+- Randomly sample a learning rate factor between `2` and `4` so that the
+  learning rate (`lr`) is bounded between \\10^{-2}\\ and \\10^{-4}\\.
+- Randomly sample a momentum between 0.85 and 0.99.
 
 **Answer**
 
