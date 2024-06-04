@@ -1,1218 +1,1247 @@
-# Introduction to Deep Learning with PyTorch
+# Introduction to Statistics in Python
 
-## Introduction to PyTorch, a Deep Learning Library
+## Summary Statistics
 
-### Creating tensors and accessing attributes
+### Mean and median
 
-Tensors are the primary data structure in PyTorch and will be the
-building blocks for our deep learning models. They share many
-similarities with NumPy arrays but have some unique attributes too.
+In this chapter, you'll be working with the [2018 Food Carbon Footprint
+Index](https://www.nu3.de/blogs/nutrition/food-carbon-footprint-index-2018)
+from nu3. The `food_consumption` dataset contains information about the
+kilograms of food consumed per person per year in each country in each
+food category (`consumption`) as well as information about the carbon
+footprint of that food category (`co2_emissions`) measured in kilograms
+of carbon dioxide, or CO<sub>2</sub>, per person per year in each
+country.
 
-In this exercise, you'll practice creating a tensor from a Python list
-and displaying some of its attributes.
+In this exercise, you'll compute measures of center to compare food
+consumption in the US and Belgium using your `pandas` and `numpy`
+skills.
 
-**Instructions**
-
-- Begin by importing PyTorch.
-- Create a tensor from the Python list `list_a`.
-
-**Answer**
-
-```{python}
-# Import PyTorch
-import torch
-
-list_a = [1, 2, 3, 4]
-
-# Create a tensor from list_a
-tensor_a = torch.tensor(list_a)
-
-# Display the tensor device
-print(tensor_a.device)
-
-# Display the tensor data type
-print(tensor_a.dtype)
-```
-
-### Creating tensors from NumPy arrays
-
-Tensors are the fundamental data structure of PyTorch. You can create
-complex deep learning algorithms by learning how to manipulate them.
-
-The `torch` package has been imported, and two NumPy arrays have been
-created, named `array_a` and `array_b`. Both arrays have the same
-dimensions.
+`pandas` is imported as `pd` for you and `food_consumption` is
+pre-loaded.
 
 **Instructions**
 
-- Create two tensors, `tensor_a` and `tensor_b`, from the NumPy arrays
-  `array_a` and `array_b`, respectively.
-- Subtract `tensor_b` from `tensor_a`.
-- Perform an element-wise multiplication of `tensor_a` and `tensor_b`.
-- Add the resulting tensors from the two previous steps together.
-
-**Answer**
-
-```{python}
-# Create two tensors from the arrays
-tensor_a = torch.from_numpy(array_a)
-tensor_b = torch.from_numpy(array_b)
-
-# Subtract tensor_b from tensor_a 
-tensor_c = tensor_a - tensor_b
-
-# Multiply each element of tensor_a with each element of tensor_b
-tensor_d = tensor_a * tensor_b
-
-# Add tensor_c with tensor_d
-tensor_e = tensor_c + tensor_d
-print(tensor_e)
-```
-
-### Your first neural network
-
-In this exercise, you will implement a small neural network containing
-two **linear** layers. The first layer takes an eight-dimensional input,
-and the last layer outputs a one-dimensional tensor.
-
-The `torch` package and the `torch.nn` package have already been
-imported for you.
-
-**Instructions**
-
-- Create a neural network of linear layers that takes a tensor of
-  dimensions $1\times8$ as input and outputs a tensor of dimensions
-  $1\times1$.
-- Use any output dimension for the first layer you want.
-
-**Answer**
-
-```{python}
-import torch
-import torch.nn as nn
-
-input_tensor = torch.Tensor([[2, 3, 6, 7, 9, 3, 2, 1]])
-
-# Implement a small neural network with exactly two linear layers
-model = nn.Sequential(nn.Linear(8, 4),
-                      nn.Linear(4, 1),
-                     )
-
-output = model(input_tensor)
-print(output)
-```
-
-### The sigmoid and softmax functions
-
-The sigmoid and softmax functions are two of the most popular activation
-functions in deep learning. They are both usually used as the last step
-of a neural network. Sigmoid functions are used for binary
-classification problems, whereas softmax functions are often used for
-multi-class classification problems. This exercise will familiarize you
-with creating and using both functions.
-
-Let's say that you have a neural network that returned the values
-contained in the `score` tensor as a pre-activation output. You will
-apply activation functions to this output.
-
-`torch.nn` is already imported as `nn`.
-
-**Instructions**
-
-Create a sigmoid function and apply it on `input_tensor` to generate a
-probability.
-
-Create a softmax function and apply it on `input_tensor` to generate a
-probability.
-
-**Answer**
-
-```{python}
-input_tensor = torch.tensor([[0.8]])
-
-# Create a sigmoid function and apply it on input_tensor
-sigmoid = nn.Sigmoid()
-probability = sigmoid(input_tensor)
-print(probability)
-
-input_tensor = torch.tensor([[1.0, -6.0, 2.5, -0.3, 1.2, 0.8]])
-
-# Create a softmax function and apply it on input_tensor
-softmax = nn.Softmax(dim=-1)
-probabilities = softmax(input_tensor)
-print(probabilities)
-```
-
-## Training Our First Neural Network with PyTorch
-
-### Building a binary classifier in PyTorch
-
-Recall that a small neural network with a single linear layer followed
-by a sigmoid function is a binary classifier. It acts just like a
-logistic regression.
-
-In this exercise, you'll practice building this small network and
-interpreting the output of the classifier.
-
-The `torch` package and the `torch.nn` package have already been
-imported for you.
-
-**Instructions**
-
-- Create a neural network that takes a tensor of dimensions 1x8 as
-  input, and returns an output of the correct shape for binary
-  classification.
-- Pass the output of the linear layer to a sigmoid, which both takes in
-  and return a single float.
-
-**Answer**
-
-```{python}
-import torch
-import torch.nn as nn
-
-input_tensor = torch.Tensor([[3, 4, 6, 2, 3, 6, 8, 9]])
-
-# Implement a small neural network for binary classification
-model = nn.Sequential(
-  nn.Linear(8, 1),
-  nn.Sigmoid()
-)
-
-output = model(input_tensor)
-print(output)
-```
-
-### From regression to multi-class classification
-
-Recall that the models we have seen for binary classification,
-multi-class classification and regression have all been similar, barring
-a few tweaks to the model.
-
-In this exercise, you'll start by building a model for regression, and
-then tweak the model to perform a multi-class classification.
-
-**Instructions**
-
-- Create a neural network with exactly four linear layers, which takes
-  the input tensor as input, and outputs a regression value, using any
-  shapes you like for the hidden layers.
+- Import `numpy` with the alias `np`.
+- Create two DataFrames: one that holds the rows of `food_consumption`
+  for `'Belgium'` and another that holds rows for `'USA'`. Call these
+  `be_consumption` and `usa_consumption`.
+- Calculate the mean and median of kilograms of food consumed per person
+  per year for both countries.
 
 <!-- -->
 
-- A similar neural network to the one you just built is provided,
-  containing four linear layers; update this network to perform a
-  multi-class classification with four outputs.
+- Subset `food_consumption` for rows with data about Belgium and the
+  USA.
+- Group the subsetted data by `country` and select only the
+  `consumption` column.
+- Calculate the mean and median of the kilograms of food consumed per
+  person per year in each country using `.agg()`.
 
 **Answer**
 
 ```{python}
-import torch
-import torch.nn as nn
-
-input_tensor = torch.Tensor([[3, 4, 6, 7, 10, 12, 2, 3, 6, 8, 9]])
-
-# Implement a neural network with exactly four linear layers
-model = nn.Sequential(
-  nn.Linear(11, 20),
-  nn.Linear(20, 12),
-  nn.Linear(12, 6),
-  nn.Linear(6, 1),  
-)
-
-output = model(input_tensor)
-print(output)
-
-import torch
-import torch.nn as nn
-
-input_tensor = torch.Tensor([[3, 4, 6, 7, 10, 12, 2, 3, 6, 8, 9]])
-
-# Update network below to perform a multi-class classification with four labels
-model = nn.Sequential(
-  nn.Linear(11, 20),
-  nn.Linear(20, 12),
-  nn.Linear(12, 6),
-  nn.Linear(6, 4), 
-  nn.Softmax()
-)
-
-output = model(input_tensor)
-print(output)
-```
-
-### Creating one-hot encoded labels
-
-One-hot encoding is a technique that turns a single integer label into a
-vector of N elements, where N is the number of classes in your dataset.
-This vector only contains zeros and ones. In this exercise, you'll
-create the one-hot encoded vector of the label `y` provided.
-
-You'll practice doing this manually, and then make your life easier by
-leveraging the help of PyTorch! Your dataset contains three classes.
-
-NumPy is already imported as `np`, and `torch.nn.functional` as `F`. The
-`torch` package is also imported.
-
-**Instructions**
-
-- Manually create a one-hot encoded vector of the ground truth label `y`
-  by filling in the NumPy array provided.
-- Create a one-hot encoded vector of the ground truth label `y` using
-  PyTorch.
-
-**Answer**
-
-```{python}
-y = 1
-num_classes = 3
-
-# Create the one-hot encoded vector using NumPy
-one_hot_numpy = np.array([0, 1, 0])
-
-# Create the one-hot encoded vector using PyTorch
-one_hot_pytorch = F.one_hot(torch.tensor(y), num_classes)
-```
-
-### Calculating cross entropy loss
-
-Cross entropy loss is the most used loss for classification problems. In
-this exercise, you will create inputs and calculate cross entropy loss
-in PyTorch. You are provided with the ground truth label `y` and a
-vector of `scores` predicted by your model.
-
-You'll start by creating a one-hot encoded vector of the ground truth
-label `y`, which is a required step to compare `y` with the scores
-predicted by your model. Next, you'll create a cross entropy loss
-function. Last, you'll call the loss function, which takes `scores`
-(model predictions before the final softmax function), and the one-hot
-encoded ground truth label, as inputs. It outputs a single float, the
-loss of that sample.
-
-`torch`, `torch.nn` as `nn`, and `torch.nn.functional` as `F` have
-already been imported for you.
-
-**Instructions**
-
-- Create the one-hot encoded vector of the ground truth label `y` and
-  assign it to `one_hot_label`.
-- Create the cross entropy loss function and store it as `criterion`.
-- Calculate the cross entropy loss using the `one_hot_label` vector and the `scores` vector, by calling the `loss_function` you created.
-
-**Answer**
-
-```{python}
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-y = [2]
-scores = torch.tensor([[0.1, 6.0, -2.0, 3.2]])
-
-# Create a one-hot encoded vector of the label y
-one_hot_label = F.one_hot(torch.tensor(y), num_classes=scores.shape[1])
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-y = [2]
-scores = torch.tensor([[0.1, 6.0, -2.0, 3.2]])
-
-# Create a one-hot encoded vector of the label y
-one_hot_label = F.one_hot(torch.tensor(y), num_classes = scores.shape[1])
-
-# Create the cross entropy loss function
-criterion = nn.CrossEntropyLoss()
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-y = [2]
-scores = torch.tensor([[0.1, 6.0, -2.0, 3.2]])
-
-# Create a one-hot encoded vector of the label y
-one_hot_label = F.one_hot(torch.tensor(y), scores.shape[1])
-
-# Create the cross entropy loss function
-criterion = nn.CrossEntropyLoss()
-
-# Calculate the cross entropy loss
-loss = criterion(scores.double(), one_hot_label.double())
-print(loss)
-```
-
-### Estimating a sample
-
-In previous exercises, you used linear layers to build networks.
-
-Recall that the operation performed by `nn.Linear()` is to take an input
-$X$ and apply the transformation $W\*X + b$ ,where $W$ and $b$
-are two tensors (called the weight and bias).
-
-A critical part of training PyTorch models is to calculate gradients of
-the weight and bias tensors with respect to a loss function.
-
-In this exercise, you will calculate weight and bias tensor gradients
-using cross entropy loss and a sample of data.
-
-The following tensors are provded:
-
-- `weight`: a $2 \times 9$-element tensor
-- `bias`: a $2$-element tensor
-- `preds`: a $1 \times 2$-element tensor containing the model
-  predictions
-- `target`: a $1 \times 2$-element one-hot encoded tensor containing
-  the ground-truth label
-
-**Instructions**
-
-- Use the criterion you have defined to calculate the loss value with
-  respect to the predictions and target values.
-- Compute the gradients of the cross entropy loss.
-- Display the gradients of the weight and bias tensors, in that order.
-
-**Answer**
-
-```{python}
-criterion = nn.CrossEntropyLoss()
-
-# Calculate the loss
-loss = criterion(preds, target)
-
-# Compute the gradients of the loss
-loss.backward()
-
-# Display gradients of the weight and bias tensors in order
-print(weight.grad)
-print(bias.grad)
-```
-
-### Accessing the model parameters
-
-A PyTorch model created with the `nn.Sequential()` is a module that
-contains the different layers of your network. Recall that each layer
-parameter can be accessed by indexing the created model directly. In
-this exercise, you will practice accessing the parameters of different
-**linear** layers of a neural network. You won't be accessing the
-sigmoid.
-
-**Instructions**
-
-- Access the `weight` parameter of the first **linear** layer.
-- Access the `bias` parameter of the second **linear** layer.
-
-**Answer**
-
-```{python}
-model = nn.Sequential(nn.Linear(16, 8),
-                      nn.Sigmoid(),
-                      nn.Linear(8, 2))
-
-# Access the weight of the first linear layer
-weight_0 = model[0].weight
-
-# Access the bias of the second linear layer
-bias_1 = model[2].bias
-```
-
-### Updating the weights manually
-
-Now that you know how to access weights and biases, you will manually
-perform the job of the PyTorch optimizer. PyTorch functions can do what
-you're about to do, but it's helpful to do the work manually at least
-once, to understand what's going on under the hood.
-
-A neural network of three layers has been created and stored as the
-`model` variable. This network has been used for a forward pass and the
-loss and its derivatives have been calculated. A default learning rate,
-`lr`, has been chosen to scale the gradients when performing the update.
-
-**Instructions**
-
-- Create the gradient variables by accessing the local gradients of each
-  weight tensor.
-
-**Answer**
-
-```{python}
-weight0 = model[0].weight
-weight1 = model[1].weight
-weight2 = model[2].weight
-
-# Access the gradients of the weight of each linear layer
-grads0 = weight0.grad
-grads1 = weight1.grad
-grads2 = weight2.grad
-
-weight0 = model[0].weight
-weight1 = model[1].weight
-weight2 = model[2].weight
-
-# Access the gradients of the weight of each linear layer
-grads0 = weight0.grad
-grads1 = weight1.grad
-grads2 = weight2.grad
-
-# Update the weights using the learning rate and the gradients
-weight0 = weight0 - lr * grads0
-weight1 = weight1 - lr * grads1
-weight2 = weight2 - lr * grads2
-```
-
-### Using the PyTorch optimizer
-
-In the previous exercise, you manually updated the weight of a network.
-You now know what's going on under the hood, but this approach is not
-scalable to a network of many layers.
-
-Thankfully, the PyTorch SGD optimizer does a similar job in a handful of
-lines of code. In this exercise, you will practice the last step to
-complete the training loop: updating the weights using a PyTorch
-optimizer.
-
-A neural network has been created and provided as the `model` variable.
-This model was used to run a forward pass and create the tensor of
-predictions `pred`. The one-hot encoded tensor is named `target` and the
-cross entropy loss function is stored as `criterion`.
-
-`torch.optim` as `optim`, and `torch.nn` as `nn` have already been
-loaded for you.
-
-**Instructions**
-
-- Use `optim` to create an SGD optimizer with a learning rate of your
-  choice (must be less than one) for the `model` provided.
-- Update the model's parameters using the optimizer.
-
-**Answer**
-
-```{python}
-# Create the optimizer
-optimizer = optim.SGD(model.parameters(), lr=0.001)
-
-# Create the optimizer
-optimizer = optim.SGD(model.parameters(), lr=0.001)
-
-loss = criterion(pred, target)
-loss.backward()
-
-# Update the model's parameters using the optimizer
-optimizer.step()
-```
-
-### Using the MSELoss
-
-Recall that we can't use cross-entropy loss for regression problems. The
-mean squared error loss (MSELoss) is a common loss function for
-regression problems. In this exercise, you will practice calculating and
-observing the loss using NumPy as well as its PyTorch implementation.
-
-The `torch` package has been imported as well as `numpy` as `np` and
-`torch.nn` as `nn`.
-
-**Instructions**
-
-- Calculate the MSELoss using NumPy.
-- Create a MSELoss function using PyTorch.
-- Convert `y_hat` and `y` to tensors and then float data types, and then
-  use them to calculate MSELoss using PyTorch as `mse_pytorch`.
-
-**Answer**
-
-```{python}
-y_hat = np.array(10)
-y = np.array(1)
-
-# Calculate the MSELoss using NumPy
-mse_numpy = np.mean((y_hat - y)**2)
-
-# Create the MSELoss function
-criterion = nn.MSELoss()
-
-# Calculate the MSELoss using the created loss function
-mse_pytorch = criterion(torch.tensor(y_hat).float(), torch.tensor(y).float())
-print(mse_pytorch)
-```
-
-### Writing a training loop
-
-In `scikit-learn`, the whole training loop is contained in the `.fit()`
-method. In PyTorch, however, you implement the loop manually. While this
-provides control over loop's content, it requires a custom
-implementation.
-
-You will write a training loop every time you train a deep learning
-model with PyTorch, which you'll practice in this exercise. The
-`show_results()` function provided will display some sample ground truth
-and the model predictions.
-
-The package imports provided are: pandas as `pd`, `torch`, `torch.nn` as
-`nn`, `torch.optim` as `optim`, as well as `DataLoader` and
-`TensorDataset` from `torch.utils.data`.
-
-The following variables have been created: `dataloader`, containing the
-dataloader; `model`, containing the neural network; `criterion`,
-containing the loss function, `nn.MSELoss()`; `optimizer`, containing
-the SGD optimizer; and `num_epochs`, containing the number of epochs.
-
-**Instructions**
-
-- Write a for loop that iterates over the `dataloader`; this should be
-  nested within a for loop that iterates over a range equal to the
-  number of epochs.
-- Set the gradients of the optimizer to zero.
-- Write the forward pass.
-- Compute the MSE loss value using the criterion() function provided.
-- Compute the gradients.
-- Update the model's parameters.
-
-**Answer**
-
-```{python}
-# Loop over the number of epochs and then the dataloader
-for i in range(num_epochs):
-  for data in dataloader:
-    # Set the gradients to zero
-    optimizer.zero_grad()
-
-# Loop over the number of epochs and the dataloader
-for i in range(num_epochs):
-  for data in dataloader:
-    # Set the gradients to zero
-    optimizer.zero_grad()
-    # Run a forward pass
-    feature, target = data
-    prediction = model(feature)    
-    # Calculate the loss
-    loss = criterion(prediction, target)    
-    # Compute the gradients
-    loss.backward()
-
-# Loop over the number of epochs and the dataloader
-for i in range(num_epochs):
-  for data in dataloader:
-    # Set the gradients to zero
-    optimizer.zero_grad()  
-    # Run a forward pass
-    feature, target = data
-    prediction = model(feature)    
-    # Calculate the loss
-    loss = criterion(prediction, target)    
-    # Compute the gradients
-    loss.backward()
-    # Update the model's parameters
-    optimizer.step()
-show_results(model, dataloader)
-```
-
-## Neural Network Architecture and Hyperparameters
-
-### Implementing ReLU
-
-The rectified linear unit (or ReLU) function is one of the most common
-activation functions in deep learning.
-
-It overcomes the training problems linked with the sigmoid function you
-learned, such as the **vanishing gradients problem**.
-
-In this exercise, you'll begin with a ReLU implementation in PyTorch.
-Next, you'll calculate the gradients of the function.
-
-The `nn` module has already been imported for you.
-
-**Instructions**
-
-- Create a ReLU function in PyTorch.
-- Calculate the gradient of the ReLU function for `x` using the `relu_pytorch()` function you defined, then running a backward pass
-- Find the gradient at `x`.
-
-**Answer**
-
-```{python}
-# Create a ReLU function with PyTorch
-relu_pytorch = nn.ReLU()
-
-# Create a ReLU function with PyTorch
-relu_pytorch = nn.ReLU()
-
-# Apply your ReLU function on x, and calculate gradients
-x = torch.tensor(-1.0, requires_grad=True)
-y = relu_pytorch(x)
-y.backward()
-
-# Print the gradient of the ReLU function for x
-gradient = x.grad
-print(gradient)
-```
-
-### Implementing leaky ReLU
-
-You've learned that ReLU is one of the most used activation functions in
-deep learning. You will find it in modern architecture. However, it does
-have the inconvenience of outputting null values for negative inputs and
-therefore, having null gradients. Once an element of the input is
-negative, it will be set to zero for the rest of the training. Leaky
-ReLU overcomes this challenge by using a multiplying factor for negative
-inputs.
-
-In this exercise, you will implement the leaky ReLU function in NumPy
-and PyTorch and practice using it. The `numpy` as `np` package, the
-`torch` package as well as the `torch.nn` as `nn` have already been
-imported.
-
-**Instructions**
-
-- Create a leaky ReLU function in PyTorch with a negative slope of 0.05.
-- Call the function on the tensor `x`, which has already been defined
-  for you.
-
-**Answer**
-
-```{python}
-# Create a leaky relu function in PyTorch
-leaky_relu_pytorch = nn.LeakyReLU(negative_slope=0.05)
-
-x = torch.tensor(-2.0)
-# Call the above function on the tensor x
-output = leaky_relu_pytorch(x)
-print(output)
-```
-
-### Counting the number of parameters
-
-Deep learning models are famous for having a lot of parameters. Recent
-language models have billions of parameters. With more parameters comes
-more computational complexity and longer training times, and a deep
-learning practitioner must know how many parameters their model has.
-
-In this exercise, you will calculate the number of parameters in your
-model, first using PyTorch then manually.
-
-The `torch.nn` package has been imported as `nn`.
-
-**Instructions**
-
-- Iterate through the model's parameters to update the total variable
-  with the total number of parameters in the model.
-
-**Answer**
-
-```{python}
-model = nn.Sequential(nn.Linear(16, 4),
-                      nn.Linear(4, 2),
-                      nn.Linear(2, 1))
-
-total = 0
-
-# Calculate the number of parameters in the model
-for p in model.parameters():
-  total += p.numel()
-```
-
-### Manipulating the capacity of a network
-
-In this exercise, you will practice creating neural networks with
-different capacities. The capacity of a network reflects the number of
-parameters in said network. To help you, a `calculate_capacity()`
-function has been implemented, as follows:
-
-    def calculate_capacity(model):
-      total = 0
-      for p in model.parameters():
-        total += p.numel()
-      return total
-
-This function returns the number of parameters in the your model.
-
-The dataset you are training this network on has `n_features` features
-and `n_classes` classes. The `torch.nn` package has been imported as
-`nn`.
-
-**Instructions**
-
-Create a neural network with exactly three linear layers and less than
-120 parameters, which takes `n_features` as inputs and outputs
-`n_classes`.
-
-Create a neural network with exactly four linear layers and more than
-120 parameters, which takes `n_features` as inputs and outputs
-`n_classes`.
-
-**Answer**
-
-```{python}
-n_features = 8
-n_classes = 2
-
-input_tensor = torch.Tensor([[3, 4, 6, 2, 3, 6, 8, 9]])
-
-# Create a neural network with less than 120 parameters
-model = nn.Sequential(nn.Linear(n_features, 8),
-                      nn.Linear(8, 4),
-                      nn.Linear(4, n_classes))
-output = model(input_tensor)
-
-print(calculate_capacity(model))
-
-n_features = 8
-n_classes = 2
-
-input_tensor = torch.Tensor([[3, 4, 6, 2, 3, 6, 8, 9]])
-
-# Create a neural network with more than 120 parameters
-model = nn.Sequential(nn.Linear(n_features, 16),
-                      nn.Linear(16, 8),
-                      nn.Linear(8, 3), 
-                      nn.Linear(3, n_classes))
-
-output = model(input_tensor)
-
-print(calculate_capacity(model))
-```
-
-### Experimenting with learning rate
-
-In this exercise, your goal is to find the optimal learning rate such
-that the optimizer can find the minimum of the non-convex function
-$x^{4} + x^{3} - 5x^{2}$ in ten steps.
-
-You will experiment with three different learning rate values. For this
-problem, try learning rate values between 0.001 to 0.1.
-
-You are provided with the `optimize_and_plot()` function that takes the
-learning rate for the first argument. This function will run 10 steps of
-the SGD optimizer and display the results.
-
-**Instructions**
-
-- Try a small learning rate value such that the optimizer isn't able to
-  get past the first minimum on the right.
-
-<!-- -->
-
-- Try a large learning rate value such that the optimizer skips past the
-  global minimum at -2.
-
-<!-- -->
-
-- Based on the previous results, try a better learning rate value.
-
-**Answer**
-
-```{python}
-# Try a first learning rate value
-lr0 = 0.005
-optimize_and_plot(lr=lr0)
-
-# Try a second learning rate value
-lr1 = 0.1
-optimize_and_plot(lr=lr1)
-
-# Try a third learning rate value
-lr2 = 0.09
-optimize_and_plot(lr=lr2)
-```
-
-### Experimenting with momentum
-
-In this exercise, your goal is to find the optimal momentum such that
-the optimizer can find the minimum of the following non-convex function
-$x^{4} + x^{3} - 5x^{2}$ in 20 steps. You will experiment with two
-different momentum values. For this problem, the learning rate is fixed
-at 0.01.
-
-You are provided with the `optimize_and_plot()` function that takes the
-learning rate for the first argument. This function will run 20 steps of
-the SGD optimizer and display the results.
-
-**Instructions**
-
-- Try a first value for the momentum such that the optimizer gets stuck
-  in the first minimum.
-
-<!-- -->
-
-- Try a second value for the momentum such that the optimizer finds the
-  global optimum.
-
-**Answer**
-
-```{python}
-# Try a first value for momentum
-mom0 = 0.85
-optimize_and_plot(momentum=mom0)
-
-# Try a second value for momentum
-mom1 = 0.95
-optimize_and_plot(momentum=mom1)
-```
-
-### Freeze layers of a model
-
-You are about to fine-tune a model on a new task after loading
-pre-trained weights. The model contains three linear layers. However,
-because your dataset is small, you only want to train the last linear
-layer of this model and freeze the first two linear layers.
-
-The model has already been created and exists under the variable
-`model`. You will be using the `named_parameters` method of the model to
-list the parameters of the model. Each parameter is described by a name.
-This name is a string with the following naming convention: `x.name`
-where `x` is the index of the layer.
-
-Remember that a linear layer has two parameters: the `weight` and the
-`bias`.
-
-**Instructions**
-
-- Use an `if` statement to determine if the parameter should be frozen
-  or not based on its name.
-- Freeze the parameters of the first two layers of this model.
-
-**Answer**
-
-```{python}
-for name, param in model.named_parameters():
-  
-    # Check if the parameters belong to the first layer
-    if name == '0.weight' or name == '0.bias':
-   
-        # Freeze the parameters
-        param.requires_grad = False
-        
-    # Check if the parameters belong to the second layer
-    if name == '1.weight' or name == '1.bias':
-      
-        # Freeze the parameters
-        param.requires_grad = False
-```
-
-### Layer initialization
-
-The initialization of the weights of a neural network has been the focus
-of researchers for many years. When training a network, the method used
-to initialize the weights has a direct impact on the final performance
-of the network.
-
-As a machine learning practitioner, you should be able to experiment
-with different initialization strategies. In this exercise, you are
-creating a small neural network made of two layers and you are deciding
-to initialize each layer's weights with the uniform method.
-
-**Instructions**
-
-- For each layer (`layer0` and `layer1`), use the uniform initialization
-  method to initialize the weights.
-
-**Answer**
-
-```{python}
-layer0 = nn.Linear(16, 32)
-layer1 = nn.Linear(32, 64)
-
-# Use uniform initialization for layer0 and layer1 weights
-nn.init.uniform_(layer0.weight)
-nn.init.uniform_(layer1.weight)
-
-model = nn.Sequential(layer0, layer1)
-```
-
-## Evaluating and Improving Models
-
-### Using the TensorDataset class
-
-In practice, loading your data into a PyTorch dataset will be one of the
-first steps you take in order to create and train a neural network with
-PyTorch.
-
-The `TensorDataset` class is very helpful when your dataset can be
-loaded directly as a NumPy array. Recall that `TensorDataset()` can take
-one or more NumPy arrays as input.
-
-In this exercise, you'll practice creating a PyTorch dataset using the
-TensorDataset class.
-
-`torch` and `numpy` have already been imported for you, along with the
-`TensorDataset` class.
-
-**Instructions**
-
-- Convert the NumPy arrays provided to PyTorch tensors.
-- Create a TensorDataset using the `torch_features` and the
-  `torch_target` tensors provided (in this order).
-- Return the last element of the dataset.
-
-**Answer**
-
-```{python}
+# Import numpy with alias np
 import numpy as np
-import torch
-from torch.utils.data import TensorDataset
 
-np_features = np.array(np.random.rand(12, 8))
-np_target = np.array(np.random.rand(12, 1))
+# Filter for Belgium
+be_consumption = food_consumption[food_consumption['country'] == 'Belgium']
 
-# Convert arrays to PyTorch tensors
-torch_features = torch.tensor(np_features)
-torch_target = torch.tensor(np_target)
+# Filter for USA
+usa_consumption = food_consumption[food_consumption['country'] == 'USA']
 
-# Create a TensorDataset from two tensors
-dataset = TensorDataset(torch_features, torch_target)
+# Calculate mean and median consumption in Belgium
+print(np.mean(be_consumption['consumption']))
+print(np.median(be_consumption['consumption']))
 
-# Return the last element of this dataset
-print(dataset[-1])
+# Calculate mean and median consumption in USA
+print(np.mean(usa_consumption['consumption']))
+print(np.median(usa_consumption['consumption']))
+
+
+# Import numpy as np
+import numpy as np
+
+# Subset for Belgium and USA only
+be_and_usa = food_consumption[(food_consumption['country'] == "Belgium") | (food_consumption['country'] == 'USA')]
+
+# Group by country, select consumption column, and compute mean and median
+print(be_and_usa.groupby('country')['consumption'].agg([np.mean, np.median]))
 ```
 
-### From data loading to running a forward pass
+### Mean vs. median
 
-In this exercise, you'll create a PyTorch `DataLoader` from a pandas
-DataFrame and call a model on this dataset. Specifically, you'll run a
-**forward pass** on a neural network. You'll continue working with fully
-connected neural networks, as you have done so far.
+In the video, you learned that the mean is the sum of all the data
+points divided by the total number of data points, and the median is the
+middle value of the dataset where 50% of the data is less than the
+median, and 50% of the data is greater than the median. In this
+exercise, you'll compare these two measures of center.
 
-You'll begin by subsetting a loaded DataFrame called `dataframe`,
-converting features and targets NumPy arrays, and converting to PyTorch
-tensors in order to create a PyTorch dataset.
-
-This dataset can be loaded into a PyTorch `DataLoader`, batched,
-shuffled, and used to run a forward pass on a custom fully connected
-neural network.
-
-NumPy as `np`, pandas as `pd`, `torch`, `TensorDataset()`, and
-`DataLoader()` have been imported for you.
+`pandas` is loaded as `pd`, `numpy` is loaded as `np`, and
+`food_consumption` is available.
 
 **Instructions**
 
-- Extract the features (`ph`, `Sulfate`, `Conductivity`,
-  `Organic_carbon`) and target (`Potability`) values and load them into
-  the appropriate tensors to represent features and targets.
-- Use both tensors to create a PyTorch dataset using the dataset class
-  that's quickest to use when tensors don't require any additional
-  preprocessing.
-- Create a PyTorch `DataLoader` from the created `TensorDataset`; this `DataLoader` should use a `batch_size` of two and `shuffle` the dataset.
-- Implement a small, fully connected neural network using exactly two linear layers and the `nn.Sequential()` API, where the final output size is 1.
+- Import `matplotlib.pyplot` with the alias `plt`.
+- Subset `food_consumption` to get the rows where `food_category` is
+  `'rice'`.
+- Create a histogram of `co2_emission` for rice and show the plot.
+- Use `.agg()` to calculate the mean and median of `co2_emission` for rice.
+
 
 **Answer**
 
 ```{python}
-# Load the different columns into two PyTorch tensors
-features = torch.tensor(dataframe[['ph', 'Sulfate', 'Conductivity', 'Organic_carbon']].to_numpy()).float()
-target = torch.tensor(dataframe['Potability'].to_numpy()).float()
+# Import matplotlib.pyplot with alias plt
+import matplotlib.pyplot as plt
 
-# Create a dataset from the two generated tensors
-dataset = TensorDataset(features, target)
+# Subset for food_category equals rice
+rice_consumption = food_consumption[food_consumption['food_category'] == 'rice']
 
-# Load the different columns into two PyTorch tensors
-features = torch.tensor(dataframe[['ph', 'Sulfate', 'Conductivity', 'Organic_carbon']].to_numpy()).float()
-target = torch.tensor(dataframe['Potability'].to_numpy()).float()
+# Histogram of co2_emission for rice and show plot
+rice_consumption['co2_emission'].hist()
+plt.show()
 
-# Create a dataset from the two generated tensors
-dataset = TensorDataset(features, target)
 
-# Create a dataloader using the above dataset
-dataloader = DataLoader(dataset, shuffle=True, batch_size=2)
-x, y = next(iter(dataloader))
+# Subset for food_category equals rice
+rice_consumption = food_consumption[food_consumption['food_category'] == 'rice']
 
-# Load the different columns into two PyTorch tensors
-features = torch.tensor(dataframe[['ph', 'Sulfate', 'Conductivity', 'Organic_carbon']].to_numpy()).float()
-target = torch.tensor(dataframe['Potability'].to_numpy()).float()
-
-# Create a dataset from the two generated tensors
-dataset = TensorDataset(features, target)
-
-# Create a dataloader using the above dataset
-dataloader = DataLoader(dataset, shuffle=True, batch_size=2)
-x, y = next(iter(dataloader))
-
-# Create a model using the nn.Sequential API
-model = nn.Sequential(
-  nn.Linear(4, 16), 
-  nn.Linear(16, 1)
-)
-
-output = model(features)
-print(output)
+# Calculate mean and median of co2_emission with .agg()
+print(rice_consumption['co2_emission'].agg([np.mean, np.median]))
 ```
 
-### Writing the evaluation loop
+### Quartiles, quantiles, and quintiles
 
-In this exercise, you will practice writing the evaluation loop. Recall
-that the evaluation loop is similar to the training loop, except that
-you will not perform the gradient calculation and the optimizer step.
+Quantiles are a great way of summarizing numerical data since they can
+be used to measure center and spread, as well as to get a sense of where
+a data point stands in relation to the rest of the data set. For
+example, you might want to give a discount to the 10% most active users
+on a website.
 
-The `model` has already been defined for you, along with the object
-`validationloader`, which is a dataset.
+In this exercise, you'll calculate quartiles, quintiles, and deciles,
+which split up a dataset into 4, 5, and 10 pieces, respectively.
+
+Both `pandas` as `pd` and `numpy` as `np` are loaded and
+`food_consumption` is available.
 
 **Instructions**
 
-- Set the model to evaluation mode.
-- Sum the current batch loss to the `validation_loss` variable.
-- Calculate the mean loss value for the epoch.
-- Set the model back to training mode.
-
-**Answer**
-
-```{python}
-# Set the model to evaluation mode
-model.eval()
-validation_loss = 0.0
-
-with torch.no_grad():
-  
-  for data in validationloader:
-    
-      outputs = model(data[0])
-      loss = criterion(outputs, data[1])
-      
-      # Sum the current loss to the validation_loss variable
-      validation_loss += loss.item()
-
-# Set the model to evaluation mode
-model.eval()
-validation_loss = 0.0
-
-with torch.no_grad():
-  
-  for data in validationloader:
-    
-      outputs = model(data[0])
-      loss = criterion(outputs, data[1])
-      
-      # Sum the current loss to the validation_loss variable
-      validation_loss += loss.item()
-      
-# Calculate the mean loss value
-validation_loss_epoch = validation_loss / len(validationloader)
-print(validation_loss_epoch)
-
-# Set the model back to training mode
-model.train()
-```
-
-### Calculating accuracy using torchmetrics
-
-In addition to the losses, you should also be keeping track of the
-accuracy during training. By doing so, you will be able to select the
-epoch when the model performed the best.
-
-In this exercise, you will practice using the `torchmetrics` package to
-calculate the accuracy. You will be using a sample of the facemask
-dataset. This dataset contains three different classes. The
-`plot_errors` function will display samples where the model predictions
-do not match the ground truth. Performing such error analysis will help
-you understand your model failure modes.
-
-The `torchmetrics` package is already imported. The model `outputs` are
-the probabilities returned by a softmax as the last step of the model.
-The `labels` tensor contains the labels as one-hot encoded vectors.
-
-**Instructions**
-
-- Create an accuracy metric for a `"multiclass"` problem with three
-  classes.
-- Calculate the accuracy for each batch of the dataloader.
-- Calculate accuracy for the epoch.
-- Reset the metric for the next epoch.
-
-**Answer**
-
-```{python}
-# Create accuracy metric using torch metrics
-metric = torchmetrics.Accuracy(task="multiclass", num_classes=3)
-for data in dataloader:
-    features, labels = data
-    outputs = model(features)
-    
-    # Calculate accuracy over the batch
-    acc = metric(outputs, labels.argmax(dim=-1))
-
-# Create accuracy metric using torch metrics
-metric = torchmetrics.Accuracy(task="multiclass", num_classes=3)
-for data in dataloader:
-    features, labels = data
-    outputs = model(features)
-    
-    # Calculate accuracy over the batch
-    acc = metric(outputs.softmax(dim=-1), labels.argmax(dim=-1))
-    
-# Calculate accuracy over the whole epoch
-acc = metric.compute()
-
-# Reset the metric for the next epoch (training or validation)
-metric.reset()
-plot_errors(model, dataloader)
-```
-
-### Experimenting with dropout
-
-The dropout layer randomly zeroes out elements of the input tensor.
-Doing so helps fight overfitting. In this exercise, you'll create a
-small neural network with at least two linear layers, two dropout
-layers, and two activation functions.
-
-The `torch.nn` package has already been imported as `nn`. An
-`input_tensor` of dimensions $1 \times 3072$ has been created for you.
-
-**Instructions**
-
-- Create a small neural network with one linear layer, one ReLU
-  function, and one dropout layer, in that order.
-- The model should take `input_tensor` as input and return an output of
-  size 16.
+- Calculate the quartiles of the `co2_emission` column of
+  `food_consumption`.
 
 <!-- -->
 
-- Using the same neural network, set the probability of zeroing out
-  elements in the dropout layer to `0.8`.
+- Calculate the six quantiles that split up the data into 5 pieces
+  (quintiles) of the `co2_emission` column of `food_consumption`.
+
+<!-- -->
+
+- Calculate the eleven quantiles of `co2_emission` that split up the
+  data into ten pieces (deciles).
 
 **Answer**
 
 ```{python}
-# Create a small neural network
-model = nn.Sequential(nn.Linear(3072, 16),
-                      nn.ReLU(),
-                      nn.Dropout())
-model(input_tensor)
+# Calculate the quartiles of co2_emission
+print(np.quantile(food_consumption['co2_emission'], [0, 0.25, 0.5, 0.75, 1]))
 
-# Using the same model, set the dropout probability to 0.8
-model = nn.Sequential(nn.Linear(3072, 16),
-                      nn.ReLU(),
-                      nn.Dropout(p=0.8))
-model(input_tensor)
+# Calculate the quintiles of co2_emission
+print(np.quantile(food_consumption['co2_emission'], [0, 0.2, 0.4, 0.6, 0.8, 1]))
+
+# Calculate the deciles of co2_emission
+print(np.quantile(food_consumption['co2_emission'], np.linspace(0, 1, 11)))
 ```
 
-### Implementing random search
+### Variance and standard deviation
 
-Hyperparameter search is a computationally costly approach to experiment
-with different hyperparameter values. However, it can lead to
-performance improvements. In this exercise, you will implement a random
-search algorithm.
+Variance and standard deviation are two of the most common ways to
+measure the spread of a variable, and you'll practice calculating these
+in this exercise. Spread is important since it can help inform
+expectations. For example, if a salesperson sells a mean of 20 products
+a day, but has a standard deviation of 10 products, there will probably
+be days where they sell 40 products, but also days where they only sell
+one or two. Information like this is important, especially when making
+predictions.
 
-You will randomly sample 10 values of the learning rate and momentum
-from the uniform distribution. To do so, you will use the
-`np.random.uniform()` function.
-
-The `numpy` package has already been imported as `np`.
+Both `pandas` as `pd` and `numpy` as `np` are loaded, and
+`food_consumption` is available.
 
 **Instructions**
 
-- Randomly sample a learning rate factor between `2` and `4` so that the
-  learning rate (`lr`) is bounded between $10^{-2}$ and $10^{-4}$.
-- Randomly sample a momentum between 0.85 and 0.99.
+- Calculate the variance and standard deviation of `co2_emission` for
+  each `food_category` by grouping and aggregating.
+- Import `matplotlib.pyplot` with alias `plt`.
+- Create a histogram of `co2_emission` for the `beef` `food_category`
+  and show the plot.
+- Create a histogram of `co2_emission` for the `eggs` `food_category`
+  and show the plot.
 
 **Answer**
 
 ```{python}
-values = []
-for idx in range(10):
-    # Randomly sample a learning rate factor 2 and 4
-    factor = np.random.uniform(2, 4)
-    lr = 10 ** -factor
-    
-    # Randomly sample a momentum between 0.85 and 0.99
-    momentum = np.random.uniform(0.85, 0.99)
-    
-    values.append((lr, momentum))
+# Print variance and sd of co2_emission for each food_category
+print(food_consumption.groupby('food_category')['co2_emission'].agg([np.var, np.std]))
+
+# Import matplotlib.pyplot with alias plt
+import matplotlib.pyplot as plt
+
+# Create histogram of co2_emission for food_category 'beef'
+food_consumption[food_consumption['food_category'] == 'beef']['co2_emission'].hist()
+# Show plot
+plt.show()
+
+# Create histogram of co2_emission for food_category 'eggs'
+food_consumption[food_consumption['food_category'] == 'eggs']['co2_emission'].hist()
+# Show plot
+plt.show()
+```
+
+### Finding outliers using IQR
+
+Outliers can have big effects on statistics like mean, as well as
+statistics that rely on the mean, such as variance and standard
+deviation. Interquartile range, or IQR, is another way of measuring
+spread that's less influenced by outliers. IQR is also often used to
+find outliers. If a value is less than \\\text{Q1} - 1.5 \times
+\text{IQR}\\ or greater than \\\text{Q3} + 1.5 \times \text{IQR}\\, it's
+considered an outlier. In fact, this is how the lengths of the whiskers
+in a `matplotlib` box plot are calculated.
+
+![Diagram of a box plot showing median, quartiles, and
+outliers](https://assets.datacamp.com/production/repositories/5758/datasets/ca7e6e1832be7ec1842f62891815a9b0488efa83/Screen%20Shot%202020-04-28%20at%2010.04.54%20AM.png)
+
+In this exercise, you'll calculate IQR and use it to find some outliers.
+`pandas` as `pd` and `numpy` as `np` are loaded and `food_consumption`
+is available.
+
+**Instructions**
+
+- Calculate the total `co2_emission` per country by grouping by country
+  and taking the sum of `co2_emission`. Store the resulting DataFrame as
+  `emissions_by_country`.
+- Compute the first and third quartiles of `emissions_by_country` and store these as `q1` and `q3`.
+- Calculate the interquartile range of `emissions_by_country` and store it as `iqr`.
+- Calculate the lower and upper cutoffs for outliers of `emissions_by_country`, and store these as lower and `upper`.
+- Subset `emissions_by_country` to get countries with a total emission greater than the `upper` cutoff or a total emission less than the `lower` cutoff.
+
+**Answer**
+
+```{python}
+# Calculate total co2_emission per country: emissions_by_country
+emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
+
+print(emissions_by_country)
+
+
+# Calculate total co2_emission per country: emissions_by_country
+emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
+
+# Compute the first and third quartiles and IQR of emissions_by_country
+q1 = np.quantile(emissions_by_country, 0.25)
+q3 = np.quantile(emissions_by_country, 0.75)
+iqr = q3 - q1
+
+
+# Calculate total co2_emission per country: emissions_by_country
+emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
+
+# Compute the first and third quantiles and IQR of emissions_by_country
+q1 = np.quantile(emissions_by_country, 0.25)
+q3 = np.quantile(emissions_by_country, 0.75)
+iqr = q3 - q1
+
+# Calculate the lower and upper cutoffs for outliers
+lower = q1 - 1.5 * iqr
+upper = q3 + 1.5 * iqr
+
+
+# Calculate total co2_emission per country: emissions_by_country
+emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
+
+# Compute the first and third quantiles and IQR of emissions_by_country
+q1 = np.quantile(emissions_by_country, 0.25)
+q3 = np.quantile(emissions_by_country, 0.75)
+iqr = q3 - q1
+
+# Calculate the lower and upper cutoffs for outliers
+lower = q1 - 1.5 * iqr
+upper = q3 + 1.5 * iqr
+
+# Subset emissions_by_country to find outliers
+outliers = emissions_by_country[(emissions_by_country < lower) | (emissions_by_country > upper)]
+print(outliers)
+```
+
+## Random Numbers and Probability
+
+### Calculating probabilities
+
+You're in charge of the sales team, and it's time for performance
+reviews, starting with Amir. As part of the review, you want to randomly
+select a few of the deals that he's worked on over the past year so that
+you can look at them more deeply. Before you start selecting deals,
+you'll first figure out what the chances are of selecting certain deals.
+
+Recall that the probability of an event can be calculated by \$\$
+P(\text{event}) = \frac{\text{# ways event can happen}}{\text{total \#
+of possible outcomes}} \$\$
+
+Both `pandas` as `pd` and `numpy` as `np` are loaded and `amir_deals` is
+available.
+
+**Instructions**
+
+- Count the number of deals Amir worked on for each `product` type and
+  store in `counts`.
+- Calculate the probability of selecting a deal for the different product types by dividing the counts by the total number of deals Amir worked on. Save this as `probs`.
+
+
+**Answer**
+
+```{python}
+# Count the deals for each product
+counts = amir_deals['product'].value_counts()
+print(counts)
+
+
+# Count the deals for each product
+counts = amir_deals['product'].value_counts()
+
+# Calculate probability of picking a deal with each product
+probs = counts / amir_deals.shape[0]
+print(probs)
+```
+
+### Sampling deals
+
+In the previous exercise, you counted the deals Amir worked on. Now it's
+time to randomly pick five deals so that you can reach out to each
+customer and ask if they were satisfied with the service they received.
+You'll try doing this both with and without replacement.
+
+Additionally, you want to make sure this is done randomly and that it
+can be reproduced in case you get asked how you chose the deals, so
+you'll need to set the random seed before sampling from the deals.
+
+Both `pandas` as `pd` and `numpy` as `np` are loaded and `amir_deals` is
+available.
+
+**Instructions**
+
+- Set the random seed to `24`.
+- Take a sample of `5` deals **without** replacement and store them as
+  `sample_without_replacement`.
+- Take a sample of 5 deals with replacement and save as `sample_with_replacement`.
+
+
+**Answer**
+
+```{python}
+# Set random seed
+np.random.seed(24)
+
+# Sample 5 deals without replacement
+sample_without_replacement = amir_deals.sample(5)
+print(sample_without_replacement)
+
+
+# Set random seed
+np.random.seed(24)
+
+# Sample 5 deals with replacement
+sample_with_replacement = amir_deals.sample(5, replace=True)
+print(sample_with_replacement)
+```
+
+### Creating a probability distribution
+
+A new restaurant opened a few months ago, and the restaurant's
+management wants to optimize its seating space based on the size of the
+groups that come most often. On one night, there are 10 groups of people
+waiting to be seated at the restaurant, but instead of being called in
+the order they arrived, they will be called randomly. In this exercise,
+you'll investigate the probability of groups of different sizes getting
+picked first. Data on each of the ten groups is contained in the
+`restaurant_groups` DataFrame.
+
+Remember that expected value can be calculated by multiplying each
+possible outcome with its corresponding probability and taking the sum.
+The `restaurant_groups` data is available. `pandas` is loaded as `pd`,
+`numpy` is loaded as `np`, and `matplotlib.pyplot` is loaded as `plt`.
+
+**Instructions**
+
+- Create a histogram of the `group_size` column of `restaurant_groups`,
+  setting `bins` to `[2, 3, 4, 5, 6]`. Remember to show the plot.
+
+<!-- -->
+
+- Count the number of each `group_size` in `restaurant_groups`, then
+  divide by the number of rows in `restaurant_groups` to calculate the
+  probability of randomly selecting a group of each size. Save as
+  `size_dist`.
+- Reset the index of `size_dist`.
+- Rename the columns of `size_dist` to `group_size` and `prob`.
+
+<!-- -->
+
+- Calculate the expected value of the `size_dist`, which represents the
+  expected group size, by multiplying the `group_size` by the `prob` and
+  taking the sum.
+
+<!-- -->
+
+- Calculate the probability of randomly picking a group of 4 or more
+  people by subsetting for groups of size 4 or more and summing the
+  probabilities of selecting those groups.
+
+**Answer**
+
+```{python}
+# Create a histogram of restaurant_groups and show plot
+restaurant_groups['group_size'].hist(bins=np.linspace(2,6,5))
+plt.show()
+
+
+# Create probability distribution
+size_dist = restaurant_groups['group_size'].value_counts() / restaurant_groups.shape[0]
+
+# Reset index and rename columns
+size_dist = size_dist.reset_index()
+size_dist.columns = ['group_size', 'prob']
+
+print(size_dist)
+
+
+# Create probability distribution
+size_dist = restaurant_groups['group_size'].value_counts() / restaurant_groups.shape[0]
+# Reset index and rename columns
+size_dist = size_dist.reset_index()
+size_dist.columns = ['group_size', 'prob']
+
+# Expected value
+expected_value = np.sum(size_dist['group_size'] * size_dist['prob'])
+print(expected_value)
+
+
+# Create probability distribution
+size_dist = restaurant_groups['group_size'].value_counts() / restaurant_groups.shape[0]
+# Reset index and rename columns
+size_dist = size_dist.reset_index()
+size_dist.columns = ['group_size', 'prob']
+
+# Expected value
+expected_value = np.sum(size_dist['group_size'] * size_dist['prob'])
+
+# Subset groups of size 4 or more
+groups_4_or_more = size_dist[size_dist['group_size'] >= 4]
+
+# Sum the probabilities of groups_4_or_more
+prob_4_or_more = np.sum(groups_4_or_more['prob'])
+print(prob_4_or_more)
+```
+
+### Data back-ups
+
+The sales software used at your company is set to automatically back
+itself up, but no one knows exactly what time the back-ups happen. It is
+known, however, that back-ups happen exactly every 30 minutes. Amir
+comes back from sales meetings at random times to update the data on the
+client he just met with. He wants to know how long he'll have to wait
+for his newly-entered data to get backed up. Use your new knowledge of
+continuous uniform distributions to model this situation and answer
+Amir's questions.
+
+**Instructions**
+
+- To model how long Amir will wait for a back-up using a continuous
+  uniform distribution, save his lowest possible wait time as `min_time`
+  and his longest possible wait time as `max_time`. Remember that
+  back-ups happen every 30 minutes.
+
+<!-- -->
+
+- Import `uniform` from `scipy.stats` and calculate the probability that
+  Amir has to wait less than 5 minutes, and store in a variable called
+  `prob_less_than_5`.
+
+<!-- -->
+
+- Calculate the probability that Amir has to wait more than 5 minutes,
+  and store in a variable called `prob_greater_than_5`.
+
+<!-- -->
+
+- Calculate the probability that Amir has to wait between 10 and 20
+  minutes, and store in a variable called `prob_between_10_and_20`.
+
+**Answer**
+
+```{python}
+# Min and max wait times for back-up that happens every 30 min
+min_time = 0
+max_time = 30
+
+# Import uniform from scipy.stats
+from scipy.stats import uniform
+
+# Calculate probability of waiting less than 5 mins
+prob_less_than_5 = uniform.cdf(5, min_time, max_time)
+print(prob_less_than_5)
+
+
+# Min and max wait times for back-up that happens every 30 min
+min_time = 0
+max_time = 30
+
+# Import uniform from scipy.stats
+from scipy.stats import uniform
+
+# Calculate probability of waiting more than 5 mins
+prob_greater_than_5 = 1 - uniform.cdf(5, min_time, max_time)
+print(prob_greater_than_5)
+
+
+# Min and max wait times for back-up that happens every 30 min
+min_time = 0
+max_time = 30
+
+# Import uniform from scipy.stats
+from scipy.stats import uniform
+
+# Calculate probability of waiting 10-20 mins
+prob_between_10_and_20 = uniform.cdf(20, min_time, max_time) - uniform.cdf(10, min_time, max_time)
+print(prob_between_10_and_20)
+```
+
+### Simulating wait times
+
+To give Amir a better idea of how long he'll have to wait, you'll
+simulate Amir waiting 1000 times and create a histogram to show him what
+he should expect. Recall from the last exercise that his minimum wait
+time is 0 minutes and his maximum wait time is 30 minutes.
+
+As usual, `pandas` as `pd`, `numpy` as `np`, and `matplotlib.pyplot` as
+`plt` are loaded.
+
+**Instructions**
+
+- Set the random seed to `334`.
+- Import `uniform` from `scipy.stats`.
+- Generate 1000 wait times from the continuous uniform distribution that models Amir's wait time. Save this as `wait_times`.
+- Create a histogram of the simulated wait times and show the plot.
+
+**Answer**
+
+```{python}
+# Set random seed to 334
+np.random.seed(334)
+
+# Import uniform
+from scipy.stats import uniform
+
+# Generate 1000 wait times between 0 and 30 mins
+wait_times = uniform.rvs(0, 30, size=1000)
+
+print(wait_times)
+
+
+# Set random seed to 334
+np.random.seed(334)
+
+# Import uniform
+from scipy.stats import uniform
+
+# Generate 1000 wait times between 0 and 30 mins
+wait_times = uniform.rvs(0, 30, size=1000)
+
+# Create a histogram of simulated times and show plot
+plt.hist(wait_times)
+plt.show()
+```
+
+### Simulating sales deals
+
+Assume that Amir usually works on 3 deals per week, and overall, he wins
+30% of deals he works on. Each deal has a binary outcome: it's either
+lost, or won, so you can model his sales deals with a binomial
+distribution. In this exercise, you'll help Amir simulate a year's worth
+of his deals so he can better understand his performance.
+
+`numpy` is imported as `np`.
+
+**Instructions**
+
+- Import `binom` from `scipy.stats` and set the random seed to 10.
+
+<!-- -->
+
+- Simulate 1 deal worked on by Amir, who wins 30% of the deals he works
+  on.
+
+<!-- -->
+
+- Simulate a typical week of Amir's deals, or one week of 3 deals.
+
+<!-- -->
+
+- Simulate a year's worth of Amir's deals, or 52 weeks of 3 deals each,
+  and store in `deals`.
+- Print the mean number of deals he won per week.
+
+**Answer**
+
+```{python}
+# Import binom from scipy.stats
+from scipy.stats import binom
+
+# Set random seed to 10
+np.random.seed(10)
+
+# Simulate a single deal
+print(binom.rvs(1, 0.3, size=1))
+
+
+# Import binom from scipy.stats
+from scipy.stats import binom
+
+# Set random seed to 10
+np.random.seed(10)
+
+# Simulate 1 week of 3 deals
+print(binom.rvs(3, 0.3, size=1))
+
+
+# Import binom from scipy.stats
+from scipy.stats import binom
+
+# Set random seed to 10
+np.random.seed(10)
+
+# Simulate 52 weeks of 3 deals
+deals = binom.rvs(3, 0.3, size=52)
+
+# Print mean deals won per week
+print(np.mean(deals))
+```
+
+### Calculating binomial probabilities
+
+Just as in the last exercise, assume that Amir wins 30% of deals. He
+wants to get an idea of how likely he is to close a certain number of
+deals each week. In this exercise, you'll calculate what the chances are
+of him closing different numbers of deals using the binomial
+distribution.
+
+`binom` is imported from `scipy.stats`.
+
+**Instructions**
+
+- What's the probability that Amir closes all 3 deals in a week? Save
+  this as `prob_3`.
+- What's the probability that Amir closes 1 or fewer deals in a week? Save this as `prob_less_than_or_equal_1`.
+- What's the probability that Amir closes more than 1 deal? Save this as `prob_greater_than_1`.
+
+**Answer**
+
+```{python}
+# Probability of closing 3 out of 3 deals
+prob_3 = binom.pmf(3, 3, 0.3)
+
+print(prob_3)
+
+
+# Probability of closing <= 1 deal out of 3 deals
+prob_less_than_or_equal_1 = binom.cdf(1, 3, 0.3)
+
+print(prob_less_than_or_equal_1)
+
+
+# Probability of closing > 1 deal out of 3 deals
+prob_greater_than_1 = 1 - binom.cdf(1, 3, 0.3)
+
+print(prob_greater_than_1)
+```
+
+### How many sales will be won?
+
+Now Amir wants to know how many deals he can expect to close each week
+if his win rate changes. Luckily, you can use your binomial distribution
+knowledge to help him calculate the expected value in different
+situations. Recall from the video that the expected value of a binomial
+distribution can be calculated by \\n \times p\\.
+
+**Instructions**
+
+- Calculate the expected number of sales out of the **3** he works on
+  that Amir will win each week if he maintains his 30% win rate.
+- Calculate the expected number of sales out of the 3 he works on that
+  he'll win if his win rate drops to 25%.
+- Calculate the expected number of sales out of the 3 he works on that
+  he'll win if his win rate rises to 35%.
+
+**Answer**
+
+```{python}
+# Expected number won with 30% win rate
+won_30pct = 3 * 0.3
+print(won_30pct)
+
+# Expected number won with 25% win rate
+won_25pct = 3 * 0.25
+print(won_25pct)
+
+# Expected number won with 35% win rate
+won_35pct = 3 * 0.35
+print(won_35pct)
+```
+
+## More Distributions and the Central Limit Theorem
+
+### Distribution of Amir's sales
+
+Since each deal Amir worked on (both won and lost) was different, each
+was worth a different amount of money. These values are stored in the
+`amount` column of `amir_deals` As part of Amir's performance review,
+you want to be able to estimate the probability of him selling different
+amounts, but before you can do this, you'll need to determine what kind
+of distribution the `amount` variable follows.
+
+Both `pandas` as `pd` and `matplotlib.pyplot` as `plt` are loaded and
+`amir_deals` is available.
+
+**Instructions**
+
+- Create a histogram with 10 bins to visualize the distribution of the
+  `amount`. Show the plot.
+
+**Answer**
+
+```{python}
+# Histogram of amount with 10 bins and show plot
+amir_deals['amount'].hist(bins=10)
+plt.show()
+```
+
+### Probabilities from the normal distribution
+
+Since each deal Amir worked on (both won and lost) was different, each
+was worth a different amount of money. These values are stored in the
+`amount` column of `amir_deals` and follow a normal distribution with a
+mean of 5000 dollars and a standard deviation of 2000 dollars. As part
+of his performance metrics, you want to calculate the probability of
+Amir closing a deal worth various amounts.
+
+`norm` from `scipy.stats` is imported as well as `pandas` as `pd`. The
+DataFrame `amir_deals` is loaded.
+
+**Instructions**
+
+- What's the probability of Amir closing a deal worth less than \$7500?
+
+<!-- -->
+
+- What's the probability of Amir closing a deal worth more than \$1000?
+
+<!-- -->
+
+- What's the probability of Amir closing a deal worth between \$3000 and
+  \$7000?
+
+<!-- -->
+
+- What amount will 25% of Amir's sales be *less than*?
+
+**Answer**
+
+```{python}
+# Probability of deal < 7500
+prob_less_7500 = norm.cdf(7500, 5000, 2000)
+
+print(prob_less_7500)
+
+
+# Probability of deal > 1000
+prob_over_1000 = 1 - norm.cdf(1000, 5000, 2000)
+
+print(prob_over_1000)
+
+
+# Probability of deal between 3000 and 7000
+prob_3000_to_7000 = norm.cdf(7000, 5000, 2000) - norm.cdf(3000, 5000, 2000)
+
+print(prob_3000_to_7000)
+
+
+# Calculate amount that 25% of deals will be less than
+pct_25 = norm.ppf(0.25, 5000, 2000)
+
+print(pct_25)
+```
+
+### Simulating sales under new market conditions
+
+The company's financial analyst is predicting that next quarter, the
+worth of each sale will increase by 20% and the volatility, or standard
+deviation, of each sale's worth will increase by 30%. To see what Amir's
+sales might look like next quarter under these new market conditions,
+you'll simulate new sales amounts using the normal distribution and
+store these in the `new_sales` DataFrame, which has already been created
+for you.
+
+In addition, `norm` from `scipy.stats`, `pandas` as `pd`, and
+`matplotlib.pyplot` as `plt` are loaded.
+
+**Instructions**
+
+- Currently, Amir's average sale amount is \$5000. Calculate what his
+  new average amount will be if it increases by 20% and store this in
+  `new_mean`.
+- Amir's current standard deviation is \$2000. Calculate what his new
+  standard deviation will be if it increases by 30% and store this in
+  `new_sd`.
+- Create a variable called `new_sales`, which contains 36 simulated
+  amounts from a normal distribution with a mean of `new_mean` and a
+  standard deviation of `new_sd`.
+- Plot the distribution of the `new_sales` `amount`s using a histogram
+  and show the plot.
+
+**Answer**
+
+```{python}
+# Calculate new average amount
+new_mean = 5000 * 1.2
+
+# Calculate new standard deviation
+new_sd = 2000 * 1.3
+
+# Simulate 36 new sales
+new_sales = norm.rvs(new_mean, new_sd, size=36)
+
+# Create histogram and show
+plt.hist(new_sales)
+plt.show()
+```
+
+### The CLT in action
+
+The central limit theorem states that a sampling distribution of a
+sample statistic approaches the normal distribution as you take more
+samples, no matter the original distribution being sampled from.
+
+In this exercise, you'll focus on the sample mean and see the central
+limit theorem in action while examining the `num_users` column of
+`amir_deals` more closely, which contains the number of people who
+intend to use the product Amir is selling.
+
+`pandas` as `pd`, `numpy` as `np`, and `matplotlib.pyplot` as `plt` are
+loaded and `amir_deals` is available.
+
+**Instructions**
+
+- Create a histogram of the `num_users` column of `amir_deals` and show
+  the plot.
+- Set the seed to `104`.
+- Take a sample of size `20` with replacement from the `num_users` column of `amir_deals`, and take the mean.
+- Repeat this 100 times using a `for` loop and store as `sample_means`. This will take 100 different samples and calculate the mean of each.
+- Convert `sample_means` into a `pd.Series`, create a histogram of the `sample_means`, and show the plot.
+
+**Answer**
+
+```{python}
+# Create a histogram of num_users and show
+amir_deals['num_users'].hist()
+plt.show()
+
+
+# Set seed to 104
+np.random.seed(104)
+
+# Sample 20 num_users with replacement from amir_deals
+samp_20 = amir_deals['num_users'].sample(20, replace=True)
+
+# Take mean of samp_20
+print(np.mean(samp_20))
+
+
+# Set seed to 104
+np.random.seed(104)
+
+# Sample 20 num_users with replacement from amir_deals and take mean
+samp_20 = amir_deals['num_users'].sample(20, replace=True)
+np.mean(samp_20)
+
+sample_means = []
+# Loop 100 times
+for i in range(100):
+  # Take sample of 20 num_users
+  samp_20 = amir_deals['num_users'].sample(20, replace=True)
+  # Calculate mean of samp_20
+  samp_20_mean = np.mean(samp_20)
+  # Append samp_20_mean to sample_means
+  sample_means.append(samp_20_mean)
+  
+print(sample_means)
+
+
+# Set seed to 104
+np.random.seed(104)
+
+sample_means = []
+# Loop 100 times
+for i in range(100):
+  # Take sample of 20 num_users
+  samp_20 = amir_deals['num_users'].sample(20, replace=True)
+  # Calculate mean of samp_20
+  samp_20_mean = np.mean(samp_20)
+  # Append samp_20_mean to sample_means
+  sample_means.append(samp_20_mean)
+  
+# Convert to Series and plot histogram
+sample_means_series = pd.Series(sample_means)
+sample_means_series.hist()
+# Show plot
+plt.show()
+```
+
+### The mean of means
+
+You want to know what the average number of users (`num_users`) is per
+deal, but you want to know this number for the entire company so that
+you can see if Amir's deals have more or fewer users than the company's
+average deal. The problem is that over the past year, the company has
+worked on more than ten thousand deals, so it's not realistic to compile
+all the data. Instead, you'll estimate the mean by taking several random
+samples of deals, since this is much easier than collecting data from
+everyone in the company.
+
+`amir_deals` is available and the user data for all the company's deals
+is available in `all_deals`. Both `pandas` as `pd` and `numpy` as `np`
+are loaded.
+
+**Instructions**
+
+- Set the random seed to `321`.
+- Take 30 samples (with replacement) of size 20 from
+  `all_deals['num_users']` and take the mean of each sample. Store the
+  sample means in `sample_means`.
+- Print the mean of `sample_means`.
+- Print the mean of the `num_users` column of `amir_deals`.
+
+**Answer**
+
+```{python}
+# Set seed to 321
+np.random.seed(321)
+
+sample_means = []
+# Loop 30 times to take 30 means
+for i in range(30):
+  # Take sample of size 20 from num_users col of all_deals with replacement
+  cur_sample = all_deals['num_users'].sample(20, replace=True)
+  # Take mean of cur_sample
+  cur_mean = np.mean(cur_sample)
+  # Append cur_mean to sample_means
+  sample_means.append(cur_mean)
+
+# Print mean of sample_means
+print(np.mean(sample_means))
+
+# Print mean of num_users in amir_deals
+print(np.mean(amir_deals['num_users']))
+```
+
+### Tracking lead responses
+
+Your company uses sales software to keep track of new sales leads. It
+organizes them into a queue so that anyone can follow up on one when
+they have a bit of free time. Since the number of lead responses is a
+countable outcome over a period of time, this scenario corresponds to a
+Poisson distribution. On average, Amir responds to 4 leads each day. In
+this exercise, you'll calculate probabilities of Amir responding to
+different numbers of leads.
+
+**Instructions**
+
+- Import `poisson` from `scipy.stats` and calculate the probability that
+  Amir responds to 5 leads in a day, given that he responds to an
+  average of 4.
+
+<!-- -->
+
+- Amir's coworker responds to an average of 5.5 leads per day. What is
+  the probability that she answers 5 leads in a day?
+
+<!-- -->
+
+- What's the probability that Amir responds to 2 or fewer leads in a
+  day?
+
+<!-- -->
+
+- What's the probability that Amir responds to more than 10 leads in a
+  day?
+
+**Answer**
+
+```{python}
+# Import poisson from scipy.stats
+from scipy.stats import poisson
+
+# Probability of 5 responses
+prob_5 = poisson.pmf(5, 4)
+
+print(prob_5)
+
+
+# Import poisson from scipy.stats
+from scipy.stats import poisson
+
+# Probability of 5 responses
+prob_coworker = poisson.pmf(5, 5.5)
+
+print(prob_coworker)
+
+
+# Import poisson from scipy.stats
+from scipy.stats import poisson
+
+# Probability of 2 or fewer responses
+prob_2_or_less = poisson.cdf(2, 4)
+
+print(prob_2_or_less)
+
+
+# Import poisson from scipy.stats
+from scipy.stats import poisson
+
+# Probability of > 10 responses
+prob_over_10 = 1 - poisson.cdf(10, 4)
+
+print(prob_over_10)
+```
+
+### Modeling time between leads
+
+To further evaluate Amir's performance, you want to know how much time
+it takes him to respond to a lead after he opens it. On average, he
+responds to 1 request every 2.5 hours. In this exercise, you'll
+calculate probabilities of different amounts of time passing between
+Amir receiving a lead and sending a response.
+
+**Instructions**
+
+- Import `expon` from `scipy.stats`. What's the probability it takes
+  Amir less than an hour to respond to a lead?
+
+<!-- -->
+
+- What's the probability it takes Amir more than 4 hours to respond to a
+  lead?
+
+<!-- -->
+
+- What's the probability it takes Amir 3-4 hours to respond to a lead?
+
+**Answer**
+
+```{python}
+# Import expon from scipy.stats
+from scipy.stats import expon
+
+# Print probability response takes < 1 hour
+print(expon.cdf(1, scale=2.5))
+
+
+# Import expon from scipy.stats
+from scipy.stats import expon
+
+# Print probability response takes > 4 hours
+print(1 - expon.cdf(4, scale=2.5))
+
+
+# Import expon from scipy.stats
+from scipy.stats import expon
+
+# Print probability response takes 3-4 hours
+print(expon.cdf(4, scale=2.5) - expon.cdf(3, scale=2.5))
+```
+
+## Correlation and Experimental Design
+
+### Relationships between variables
+
+In this chapter, you'll be working with a dataset `world_happiness`
+containing results from the [2019 World Happiness
+Report](https://worldhappiness.report/ed/2019/). The report scores
+various countries based on how happy people in that country are. It also
+ranks each country on various societal aspects such as social support,
+freedom, corruption, and others. The dataset also includes the GDP per
+capita and life expectancy for each country.
+
+In this exercise, you'll examine the relationship between a country's
+life expectancy (`life_exp`) and happiness score (`happiness_score`)
+both visually and quantitatively. `seaborn` as `sns`,
+`matplotlib.pyplot` as `plt`, and `pandas` as `pd` are loaded and
+`world_happiness` is available.
+
+**Instructions**
+
+- Create a scatterplot of `happiness_score` vs. `life_exp` (without a
+  trendline) using `seaborn`.
+- Show the plot.
+- Create a scatterplot of `happiness_score` vs. `life_exp` **with a linear trendline** using `seaborn`, setting `ci` to `None`.
+- Show the plot.
+- Calculate the correlation between `life_exp` and `happiness_score`. Save this as `cor`.
+
+
+
+**Answer**
+
+```{python}
+# Create a scatterplot of happiness_score vs. life_exp and show
+sns.scatterplot(x='life_exp', y='happiness_score', data=world_happiness)
+
+# Show plot
+plt.show()
+
+
+# Create scatterplot of happiness_score vs life_exp with trendline
+sns.lmplot(x='life_exp', y='happiness_score', data=world_happiness, ci=None)
+
+# Show plot
+plt.show()
+
+
+# Create scatterplot of happiness_score vs life_exp with trendline
+sns.lmplot(x='life_exp', y='happiness_score', data=world_happiness, ci=None)
+
+# Show plot
+plt.show()
+
+# Correlation between life_exp and happiness_score
+cor = world_happiness['life_exp'].corr(world_happiness['happiness_score'])
+
+print(cor)
+```
+
+### What can't correlation measure?
+
+While the correlation coefficient is a convenient way to quantify the
+strength of a relationship between two variables, it's far from perfect.
+In this exercise, you'll explore one of the caveats of the correlation
+coefficient by examining the relationship between a country's GDP per
+capita (`gdp_per_cap`) and happiness score.
+
+`pandas` as `pd`, `matplotlib.pyplot` as `plt`, and `seaborn` as `sns`
+are imported, and `world_happiness` is loaded.
+
+**Instructions**
+
+- Create a `seaborn` scatterplot (without a trendline) showing the
+  relationship between `gdp_per_cap` (on the x-axis) and `life_exp` (on
+  the y-axis).
+- Show the plot
+- Calculate the correlation between `gdp_per_cap` and `life_exp` and store as `cor`.
+
+
+
+**Answer**
+
+```{python}
+# Scatterplot of gdp_per_cap and life_exp
+sns.scatterplot(x='gdp_per_cap', y='life_exp', data=world_happiness)
+
+# Show plot
+plt.show()
+
+
+# Scatterplot of gdp_per_cap and life_exp
+sns.scatterplot(x='gdp_per_cap', y='life_exp', data=world_happiness)
+
+# Show plot
+plt.show()
+  
+# Correlation between gdp_per_cap and life_exp
+cor = world_happiness['gdp_per_cap'].corr(world_happiness['life_exp'])
+
+print(cor)
+```
+
+### Transforming variables
+
+When variables have skewed distributions, they often require a
+transformation in order to form a linear relationship with another
+variable so that correlation can be computed. In this exercise, you'll
+perform a transformation yourself.
+
+`pandas` as `pd`, `numpy` as `np`, `matplotlib.pyplot` as `plt`, and
+`seaborn` as `sns` are imported, and `world_happiness` is loaded.
+
+**Instructions**
+
+- Create a scatterplot of `happiness_score` versus `gdp_per_cap` and
+  calculate the correlation between them.
+
+<!-- -->
+
+- Add a new column to `world_happiness` called `log_gdp_per_cap` that
+  contains the log of `gdp_per_cap`.
+- Create a `seaborn` scatterplot of `happiness_score` versus
+  `log_gdp_per_cap`.
+- Calculate the correlation between `log_gdp_per_cap` and
+  `happiness_score`.
+
+**Answer**
+
+```{python}
+# Scatterplot of happiness_score vs. gdp_per_cap
+sns.scatterplot(x='gdp_per_cap', y='happiness_score', data=world_happiness)
+plt.show()
+
+# Calculate correlation
+cor = world_happiness['gdp_per_cap'].corr(world_happiness['happiness_score'])
+print(cor)
+
+
+# Create log_gdp_per_cap column
+world_happiness['log_gdp_per_cap'] = np.log(world_happiness['gdp_per_cap'])
+
+# Scatterplot of happiness_score vs. log_gdp_per_cap
+sns.scatterplot(x='log_gdp_per_cap', y='happiness_score', data=world_happiness)
+plt.show()
+
+# Calculate correlation
+cor = world_happiness['log_gdp_per_cap'].corr(world_happiness['happiness_score'])
+print(cor)
+```
+
+### Does sugar improve happiness?
+
+A new column has been added to `world_happiness` called
+`grams_sugar_per_day`, which contains the average amount of sugar eaten
+per person per day in each country. In this exercise, you'll examine the
+effect of a country's average sugar consumption on its happiness score.
+
+`pandas` as `pd`, `matplotlib.pyplot` as `plt`, and `seaborn` as `sns`
+are imported, and `world_happiness` is loaded.
+
+**Instructions**
+
+- Create a `seaborn` scatterplot showing the relationship between
+  `grams_sugar_per_day` (on the x-axis) and `happiness_score` (on the
+  y-axis).
+- Calculate the correlation between `grams_sugar_per_day` and
+  `happiness_score`.
+
+**Answer**
+
+```{python}
+# Scatterplot of grams_sugar_per_day and happiness_score
+sns.scatterplot(x='grams_sugar_per_day', y='happiness_score', data=world_happiness)
+plt.show()
+
+# Correlation between grams_sugar_per_day and happiness_score
+cor = world_happiness['grams_sugar_per_day'].corr(world_happiness['happiness_score'])
+print(cor)
 ```
