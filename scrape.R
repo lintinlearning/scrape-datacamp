@@ -3,7 +3,7 @@ library(rvest)
 
 course_url <- paste0(
     "https://www.datacamp.com/courses/",
-    "unsupervised-learning-in-python"
+    "introduction-to-statistics-in-python"
 )
 
 exercises <- course_url %>%
