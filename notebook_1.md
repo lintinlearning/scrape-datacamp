@@ -26,21 +26,7 @@ loaded for you.
 **Answer**
 
 ```{python}
-# Create the instance of the API
-api = HfApi()
 
-# Return the filtered list from the Hub
-models = api.list_models(
-    filter=ModelFilter(task="text-classification"),
-    sort="downloads",
-    direction=-1,
-  	limit=1
-)
-
-# Store as a list
-modelList = list(models)
-
-print(modelList[0].modelId)
 ```
 
 ### Saving a model
@@ -61,13 +47,7 @@ already loaded for you under the same name.
 **Answer**
 
 ```{python}
-modelId = "distilbert-base-uncased-finetuned-sst-2-english"
 
-# Instantiate the AutoModel class
-model = AutoModel.from_pretrained(modelId)
-
-# Save the model
-model.save_pretrained(save_directory=f"models/{modelId}")
 ```
 
 ### Inspecting datasets
@@ -89,14 +69,7 @@ Let's inspect the "derenrich/wikidata-en-descriptions-small" dataset.
 **Answer**
 
 ```{python}
-# Load the module
-from datasets import load_dataset_builder
 
-# Create the dataset builder
-reviews_builder = load_dataset_builder("derenrich/wikidata-en-descriptions-small")
-
-# Print the features
-print(reviews_builder.info.features)
 ```
 
 ### Loading datasets
@@ -120,10 +93,7 @@ of this exercise.
 **Answer**
 
 ```{python}
-# Load the train portion of the dataset
-wikipedia = load_dataset("wikimedia/wikipedia", language="20231101.en", split="train")
 
-print(f"The length of the dataset is {len(wikipedia)}")
 ```
 
 ### Manipulating datasets
@@ -149,13 +119,7 @@ The dataset is already loaded for you under `wikipedia`.
 **Answer**
 
 ```{python}
-# Filter the documents
-filtered = wikipedia.filter(lambda row: "football" in row["text"])
 
-# Create a sample dataset
-example = filtered.select(range(1))
-
-print(example[0]["text"])
 ```
 
 ## Building Pipelines with Hugging Face
@@ -189,20 +153,7 @@ sentence string that is already loaded for you.
 **Answer**
 
 ```{python}
-# Import pipeline
-from transformers import pipeline
 
-# Create the task pipeline
-task_pipeline = pipeline(task="sentiment-analysis")
-
-# Create the model pipeline
-model_pipeline = pipeline(model="distilbert-base-uncased-finetuned-sst-2-english")
-
-# Predict the sentiment
-task_output = task_pipeline(input)
-model_output = model_pipeline(input)
-
-print(f"Sentiment from task_pipeline: {task_output[0]['label']}; Sentiment from model_pipeline: {model_output[0]['label']}")
 ```
 
 ### Using AutoClasses
@@ -230,17 +181,7 @@ text is saved as `input`.
 **Answer**
 
 ```{python}
-# Download the model and tokenizer
-model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 
-# Create the pipeline
-sentimentAnalysis = pipeline(task="sentiment-analysis", model=model, tokenizer=tokenizer)
-
-# Predict the sentiment
-output = sentimentAnalysis(input)
-
-print(f"Sentiment using AutoClasses: {output[0]['label']}")
 ```
 
 ### Comparing models with the pipeline
@@ -262,30 +203,11 @@ The example input sentence is saved as `input`.
   model `"distilbert-base-uncased-finetuned-sst-2-english"`, and save as
   `distil_pipeline`.
 - Predict the sentiment for the `input` and save as `distil_output`.
-- Repeat the same steps for the model, `"kwang123/bert-sentiment-analysis"` and save as `bert_pipeline` and `bert_output`.
 
 **Answer**
 
 ```{python}
-# Create the pipeline
-distil_pipeline = pipeline(task="sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 
-# Predict the sentiment
-distil_output = distil_pipeline(input)
-
-
-# Create the pipeline
-distil_pipeline = pipeline(task="sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
-
-# Predict the sentiment
-distil_output = distil_pipeline(input)
-
-# Create the second pipeline and predict the sentiment
-bert_pipeline = pipeline(task="sentiment-analysis", model="kwang123/bert-sentiment-analysis")
-bert_output = bert_pipeline(input)
-
-print(f"Bert Output: {bert_output[0]['label']}")
-print(f"Distil Output: {distil_output[0]['label']}")
 ```
 
 ### Normalizing text
@@ -312,16 +234,7 @@ tokenizer applies to the `input_string`, "HOWDY, how aré yoü?".
 **Answer**
 
 ```{python}
-# Import the AutoTokenizer
-from transformers import AutoTokenizer
 
-# Download the tokenizer
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-
-# Normalize the input string
-output = tokenizer.backend_tokenizer.normalizer.normalize_str(input_string)
-
-print(output)
 ```
 
 ### Comparing tokenizer output
@@ -347,21 +260,7 @@ guess" is saved as `input`.
 **Answer**
 
 ```{python}
-# Download the gpt tokenizer
-gpt_tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
-# Tokenize the input
-gpt_tokens = gpt_tokenizer.tokenize(text=input)
-
-# Repeat for distilbert
-distil_tokenizer = DistilBertTokenizer.from_pretrained(
-    "distilbert-base-uncased-finetuned-sst-2-english"
-)
-distil_tokens = distil_tokenizer.tokenize(text=input)
-
-# Compare the output
-print(f"GPT tokenizer: {gpt_tokens}")
-print(f"DistilBERT tokenizer: {distil_tokens}")
 ```
 
 ### Grammatical correctness
@@ -387,16 +286,7 @@ input sentence for grammatical errors.
 **Answer**
 
 ```{python}
-# Create a pipeline
-classifier = pipeline(
-    task="text-classification",
-  model="abdulmatinomotoso/English_Grammar_Checker"
-)
 
-# Predict classification
-output = classifier("I will walk dog")
-
-print(output)
 ```
 
 ### Question Natural Language Inference
@@ -423,13 +313,7 @@ text.
 **Answer**
 
 ```{python}
-# Create the pipeline
-classifier = pipeline(task="text-classification", model="cross-encoder/qnli-electra-base")
 
-# Predict the output
-output = classifier("Where is the capital of France?, Brittany is known for their kouign-amann.")
-
-print(output)
 ```
 
 ### Zero-shot classification
@@ -461,16 +345,7 @@ download the model.
 **Answer**
 
 ```{python}
-# Build the zero-shot classifier
-classifier = pipeline(task="zero-shot-classification", model="facebook/bart-large-mnli")
 
-# Create the list
-candidate_labels = ["politics", "science", "sports"]
-
-# Predict the output
-output = classifier(text, candidate_labels)
-
-print(f"Top Label: {output['labels'][0]} with score: {output['scores'][0]}")
 ```
 
 ### Summarizing long text
@@ -499,15 +374,7 @@ already been loaded for you.
 **Answer**
 
 ```{python}
-# Create the summarization pipeline
-summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum")
 
-# Summarize the text
-summary_text = summarizer(original_text)
-
-# Compare the length
-print(f"Original text length: {len(original_text)}")
-print(f"Summary length: {len(summary_text[0]['summary_text'])}")
 ```
 
 ### Using min_length and max_length
@@ -531,19 +398,11 @@ already been loaded for you.
   `max_length` of 10; save as `short_summarizer`.
 - Summarize the `original_text` using the `short_summarizer` and save
   the result as `short_summary_text`.
-- Repeat these steps for a summarization pipeline that has a minimum length of 50 and maximum of 150; save as `long_summarizer` and `long_summary_text`, respectively.
 
 **Answer**
 
 ```{python}
-# Create a short summarizer
-short_summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum", min_length=1, max_length=10)
 
-# Summarize the input text
-short_summary_text = short_summarizer(original_text)
-
-# Print the short summary
-print(short_summary_text[0]["summary_text"])
 ```
 
 ### Summarizing several inputs
@@ -572,18 +431,7 @@ already been loaded for you.
 **Answer**
 
 ```{python}
-# Create the list
-text_to_summarize = [w["text"] for w in wiki]
 
-# Create the pipeline
-summarizer = pipeline("summarization", model="cnicu/t5-small-booksum", min_length=20, max_length=50)
-
-# Summarize each item in the list
-summaries = summarizer(text_to_summarize[:3], truncation=True)
-
-# Create for-loop to print each summary
-for i in range(0,3):
-  print(f"Summary {i+1}: {summaries[i]['summary_text']}")
 ```
 
 ## Building Pipelines for Image and Audio
@@ -615,14 +463,7 @@ loaded for you, as well as the JPEG saved as `original_image`.
 **Answer**
 
 ```{python}
-# Create the numpy array
-image_array = np.array(original_image)
 
-# Crop the center of the image
-cropped_image = image_transforms.center_crop(image=image_array, size=(200, 200))
-
-imgplot = plt.imshow(cropped_image)
-plt.show()
 ```
 
 ### Creating an image classifier
@@ -648,15 +489,7 @@ Both `pipeline` from the `transformers` library and the image, saved as
 **Answer**
 
 ```{python}
-# Create the pipeline
-image_classifier = pipeline(task="image-classification", 
-                      model="abhishek/autotrain_fashion_mnist_vit_base")
 
-# Predict the class of the image
-results = image_classifier(cropped_image)
-
-# Print the results
-print(results[0]["label"])
 ```
 
 ### Document question and answering
@@ -686,17 +519,7 @@ deeper.
 **Answer**
 
 ```{python}
-# Create the pipeline
-dqa = pipeline(task="document-question-answering", model="naver-clova-ix/donut-base-finetuned-docvqa")
 
-# Set the image and question
-image = "document.png"
-question = "Which meeting is this document about?"
-
-# Get the answer
-results = dqa(image=image, question=question)
-
-print(results)
 ```
 
 ### Visual question and answering
@@ -723,13 +546,7 @@ for people who are visually impaired or as a classification method
 **Answer**
 
 ```{python}
-# Create pipeline
-vqa = pipeline(task="visual-question-answering", model="dandelin/vilt-b32-finetuned-vqa")
 
-# Use image and question in vqa
-results = vqa(image=image, question=question)
-
-print(results)
 ```
 
 ### Resampling audio files
@@ -756,15 +573,7 @@ already loaded for you.
 **Answer**
 
 ```{python}
-# Save the old sampling rate
-old_sampling_rate = audio_file[1]["audio"]["sampling_rate"]
 
-# Resample the audio files
-audio_file = audio_file.cast_column("audio", Audio(sampling_rate=16_000))
-
-# Compare the old and new sampling rates
-print("Old sampling rate:", old_sampling_rate)
-print("New sampling rate:", audio_file[1]["audio"]["sampling_rate"])
 ```
 
 ### Filtering out audio files
@@ -784,57 +593,11 @@ pattern is the same.
   the duration, appending to the `old_durations_list`.
 - Create a new column called `duration` using `old_durations_list` and
   save to `dataset`.
-- Filter the `dataset` for audio under 6.0 seconds using a lambda function and the column `duration`; save as `filtered_dataset`.
-- Save the new durations as a list called `new_durations_list`.
-
-
 
 **Answer**
 
 ```{python}
-# Create a list of durations
-old_durations_list = []
 
-# Loop over the dataset
-for row in dataset["path"]:
-    old_durations_list.append(librosa.get_duration(path=row))
-
-# Create a new column
-dataset = dataset.add_column("duration", old_durations_list)
-
-
-# Create a list of durations
-old_durations_list = []
-
-# Loop over the dataset
-for row in dataset["path"]:
-    old_durations_list.append(librosa.get_duration(path=row))
-
-# Create a new column
-dataset = dataset.add_column("duration", old_durations_list)
-
-# Filter the dataset
-filtered_dataset = dataset.filter(lambda d: d < 6.0, input_columns=["duration"], keep_in_memory=True)
-
-
-# Create a list of durations
-old_durations_list = []
-
-# Loop over the dataset
-for row in dataset["path"]:
-    old_durations_list.append(librosa.get_duration(path=row))
-
-# Create a new column
-dataset = dataset.add_column("duration", old_durations_list)
-
-# Filter the dataset
-filtered_dataset = dataset.filter(lambda d: d < 6.0, input_columns=["duration"], keep_in_memory=True)
-
-# Save new durations
-new_durations_list = filtered_dataset["duration"]
-
-print("Old duration:", np.mean(old_durations_list)) 
-print("New duration:", np.mean(new_durations_list))
 ```
 
 ### Classifying audio files
@@ -862,17 +625,7 @@ exercise.
 **Answer**
 
 ```{python}
-# Create the pipeline
-classifier = pipeline(task="audio-classification", model="facebook/mms-lid-126")
 
-# Extract the sample
-audio = dataset[1]["audio"]["array"]
-sentence = dataset[1]["sentence"]
-
-# Predict the language
-prediction = classifier(audio)
-
-print(f"Predicted language is '{prediction[0]['label'].upper()}' for the sentence '{sentence}'")
 ```
 
 ### Instantiating an ASR pipeline
@@ -903,19 +656,7 @@ saved as `example`.
 **Answer**
 
 ```{python}
-# Create an ASR pipeline using Meta's wav2vec model
-meta_asr = pipeline(task="automatic-speech-recognition", model="facebook/wav2vec2-base-960h")
 
-# Predict the text from the example audio
-meta_pred = meta_asr(example["audio"]["array"])["text"].lower()
-
-# Repeat for OpenAI's Whisper model
-open_asr = pipeline("automatic-speech-recognition", model="openai/whisper-tiny")
-open_pred = open_asr(example["audio"]["array"])["text"].lower()
-
-# Print the prediction from both models
-print("META:", meta_pred)
-print("OPENAI:", open_pred)
 ```
 
 ### Word error rate
@@ -939,17 +680,7 @@ from the previous exercise.
 **Answer**
 
 ```{python}
-# Create the word error rate metric
-wer = load("wer")
 
-# Save the true sentence of the example
-true_sentence = example["sentence"].lower()
-
-# Compute the wer for each model prediction
-meta_wer = wer.compute(predictions=[meta_pred], references=[true_sentence])
-open_wer = wer.compute(predictions=[open_pred], references=[true_sentence])
-
-print(f"The WER for the Meta model is {meta_wer} and for the OpenAI model is {open_wer}")
 ```
 
 ### Iterating over a dataset
@@ -977,20 +708,7 @@ The dataset, `english`, ASR models - `meta_asr` and `open_asr` - and
 **Answer**
 
 ```{python}
-# Create the data function
-def data(n=3):
-    for i in range(n):
-        yield english[i]["audio"]["array"], english[i]["sentence"].lower()
-        
-# Predict the text for the audio file with both models
-output = []
-for audio, sentence in data():
-    meta_pred = meta_asr(audio)["text"].lower()
-    open_pred = open_asr(audio)["text"].lower()
-    # Append to output list
-    output.append({"sentence": sentence, "metaPred": meta_pred, "openPred": open_pred})
 
-output_df = pd.DataFrame(output)
 ```
 
 ## Fine-tuning and Embeddings

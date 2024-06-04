@@ -3,7 +3,7 @@ library(rvest)
 
 course_url <- paste0(
     "https://www.datacamp.com/courses/",
-    "introduction-to-statistics-in-python"
+    "working-with-hugging-face"
 )
 
 exercises <- course_url %>%
