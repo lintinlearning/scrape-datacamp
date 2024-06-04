@@ -544,6 +544,24 @@ short_summary_text = short_summarizer(original_text)
 
 # Print the short summary
 print(short_summary_text[0]["summary_text"])
+
+
+# Create a short summarizer
+short_summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum", min_length=1, max_length=10)
+
+# Summarize the input text
+short_summary_text = short_summarizer(original_text)
+
+# Print the short summary
+print(short_summary_text[0]["summary_text"])
+
+# Repeat for a long summarizer
+long_summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum", min_length=50, max_length=150)
+
+long_summary_text = long_summarizer(original_text)
+
+# Print the long summary
+print(long_summary_text[0]["summary_text"])
 ```
 
 ### Summarizing several inputs
@@ -991,6 +1009,29 @@ for audio, sentence in data():
     output.append({"sentence": sentence, "metaPred": meta_pred, "openPred": open_pred})
 
 output_df = pd.DataFrame(output)
+
+
+# Create the data function
+def data(n=3):
+    for i in range(n):
+        yield english[i]["audio"]["array"], english[i]["sentence"].lower()
+        
+# Predict the text for the audio file with both models
+output = []
+for audio, sentence in data():
+    meta_pred = meta_asr(audio)["text"].lower()
+    open_pred = open_asr(audio)["text"].lower()
+    # Append to output list
+    output.append({"sentence": sentence, "metaPred": meta_pred, "openPred": open_pred})
+
+output_df = pd.DataFrame(output)
+
+# Compute the WER for both models
+metaWER = wer.compute(predictions=output_df["metaPred"], references=output_df["sentence"])
+openWER = wer.compute(predictions=output_df["openPred"], references=output_df["sentence"])
+
+# Print the WER
+print(f"The WER for the meta model is {metaWER} and for the open model is {openWER}")
 ```
 
 ## Fine-tuning and Embeddings
@@ -1010,11 +1051,46 @@ The imdb dataset is already loaded for you and saved as `dataset`.
 **Instructions**
 
 - Import `AutoModelForSequenceClassification` and `AutoTokenizer`.
+- Load the model "distilbert-base-uncased-finetuned-sst-2-english" and save as `model`.
+- Create a tokenizer object based on the model and save as `tokenizer`.
+- Use `tokenizer` on the `text` in the dataset and save as `dataset`.
+
+*Note: parameters are auto-set for the tokenizer and map functions to improve performance for this exercise.*
 
 **Answer**
 
 ```{python}
+# Import modules
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+
+# Import modules
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+# Load the model
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+
+# Import modules
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+# Load the model
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+# Use tokenizer on text
+dataset = dataset.map(lambda row: tokenizer(row["text"], padding=True, max_length=512, truncation=True), keep_in_memory=True)
 ```
 
 ### Building the trainer
@@ -1044,7 +1120,19 @@ They were modified for the purpose of this exercise.
 **Answer**
 
 ```{python}
+# Create training arguments
+training_args = TrainingArguments(output_dir="./results")
 
+# Create the trainer
+trainer = Trainer(
+    model=model, 
+    args=training_args, 
+    train_dataset=training_data, 
+    eval_dataset=testing_data
+)
+
+# Start the trainer
+trainer.train()
 ```
 
 ### Using the fine-tuned model
@@ -1070,7 +1158,13 @@ teaching purposes. The model is "saved" (i.e. not really) under the path
 **Answer**
 
 ```{python}
+# Create the classifier
+classifier = pipeline(task="sentiment-analysis", model="./fine_tuned_model")
 
+# Classify the text
+results = classifier(text=text_example)
+
+print(results)
 ```
 
 ### Generating text from a text prompt
@@ -1089,11 +1183,53 @@ library are already loaded for you.
 
 - Get the tokenizer and the model for 'gpt2' then save as `tokenizer`
   and `model`, respectively.
+- Tokenize the `prompt` using the `tokenizer` and save as `input_ids`.
+- Generate new text using the `model` and save as output.
+- Decode the output and save as `generated_text`.
 
 **Answer**
 
 ```{python}
+# Set model name
+model_name = "gpt2"
 
+# Get the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+
+# Set model name
+model_name = "gpt2"
+
+# Get the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+prompt = "Wear sunglasses when its sunny because"
+
+# Tokenize the input
+input_ids = tokenizer.encode(prompt, return_tensors="pt")
+
+
+# Set model name
+model_name = "gpt2"
+
+# Get the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+prompt = "Wear sunglasses when its sunny because"
+
+# Tokenize the input
+input_ids = tokenizer.encode(prompt, return_tensors="pt")
+
+# Generate the text output
+output = model.generate(input_ids, num_return_sequences=1)
+
+# Decode the output
+generated_text = tokenizer.decode(output[0])
+
+print(generated_text)
 ```
 
 ### Generating a caption for an image
@@ -1119,7 +1255,20 @@ library is already loaded for you along with the `image`.
 **Answer**
 
 ```{python}
+# Get the processor and model
+processor = AutoProcessor.from_pretrained("microsoft/git-base-coco")
+model = AutoModelForCausalLM.from_pretrained("microsoft/git-base-coco")
 
+# Process the image
+pixels = processor(images=image, return_tensors="pt").pixel_values
+
+# Generate the ids
+output = model.generate(pixel_values=pixels)
+
+# Decode the output
+caption = processor.batch_decode(output)
+
+print(caption[0])
 ```
 
 ### Generate embeddings for a sentence
@@ -1151,7 +1300,21 @@ already loaded for you.
 **Answer**
 
 ```{python}
+# Create the first embedding model
+embedder1 = SentenceTransformer("all-MiniLM-L6-v2")
 
+# Embed the sentence
+embedding1 = embedder1.encode([sentence])
+
+# Create and use second embedding model
+embedder2 = SentenceTransformer("sentence-transformers/paraphrase-albert-small-v2")
+embedding2 = embedder2.encode([sentence])
+ 
+# Compare the shapes
+print(embedding1.shape == embedding2.shape)
+
+# Print embedding1
+print(embedding1)
 ```
 
 ### Using semantic search
@@ -1180,5 +1343,15 @@ along with `util.semantic_search()`.
 **Answer**
 
 ```{python}
+query = "I need a desktop book reader for Mac"
 
+# Generate embeddings
+query_embedding = embedder.encode([query])[0]
+
+# Compare embeddings
+hits = util.semantic_search(query_embedding, sentence_embeddings, top_k=2)
+
+# Print the top results
+for hit in hits[0]:
+    print(sentences[hit["corpus_id"]], "(Score: {:.4f})".format(hit["score"]))
 ```
