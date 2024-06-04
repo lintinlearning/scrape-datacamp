@@ -1,1247 +1,1357 @@
-# Introduction to Statistics in Python
+# Working with Hugging Face
 
-## Summary Statistics
+## Getting Started with Hugging Face
 
-### Mean and median
+### Searching the Hub with Python
 
-In this chapter, you'll be working with the [2018 Food Carbon Footprint
-Index](https://www.nu3.de/blogs/nutrition/food-carbon-footprint-index-2018)
-from nu3. The `food_consumption` dataset contains information about the
-kilograms of food consumed per person per year in each country in each
-food category (`consumption`) as well as information about the carbon
-footprint of that food category (`co2_emissions`) measured in kilograms
-of carbon dioxide, or CO<sub>2</sub>, per person per year in each
-country.
+The Hugging Face Hub provides a nice user interface for searching for
+models and learning more about them. At times, you may find it
+convenient to be able to do the same thing without leaving the
+development environment. Fortunately, Hugging Face also provides a
+Python package which allows you to find models through code.
 
-In this exercise, you'll compute measures of center to compare food
-consumption in the US and Belgium using your `pandas` and `numpy`
-skills.
+Use the `huggingface_hub` package to find the most downloaded model for
+text classification.
 
-`pandas` is imported as `pd` for you and `food_consumption` is
-pre-loaded.
+`HfApi` and `ModelFilter` from the `huggingface_hub` package is already
+loaded for you.
 
 **Instructions**
 
-- Import `numpy` with the alias `np`.
-- Create two DataFrames: one that holds the rows of `food_consumption`
-  for `'Belgium'` and another that holds rows for `'USA'`. Call these
-  `be_consumption` and `usa_consumption`.
-- Calculate the mean and median of kilograms of food consumed per person
-  per year for both countries.
-
-<!-- -->
-
-- Subset `food_consumption` for rows with data about Belgium and the
-  USA.
-- Group the subsetted data by `country` and select only the
-  `consumption` column.
-- Calculate the mean and median of the kilograms of food consumed per
-  person per year in each country using `.agg()`.
+- Create the instance of the API to the Hugging Face Hub.
+- Return a list of one item which is the most downloaded model text
+  classification task.
+- Store the returned object as a list named `modelList`.
 
 **Answer**
 
 ```{python}
-# Import numpy with alias np
-import numpy as np
+# Create the instance of the API
+api = HfApi()
 
-# Filter for Belgium
-be_consumption = food_consumption[food_consumption['country'] == 'Belgium']
+# Return the filtered list from the Hub
+models = api.list_models(
+    filter=ModelFilter(task="text-classification"),
+    sort="downloads",
+    direction=-1,
+  	limit=1
+)
 
-# Filter for USA
-usa_consumption = food_consumption[food_consumption['country'] == 'USA']
+# Store as a list
+modelList = list(models)
 
-# Calculate mean and median consumption in Belgium
-print(np.mean(be_consumption['consumption']))
-print(np.median(be_consumption['consumption']))
-
-# Calculate mean and median consumption in USA
-print(np.mean(usa_consumption['consumption']))
-print(np.median(usa_consumption['consumption']))
-
-
-# Import numpy as np
-import numpy as np
-
-# Subset for Belgium and USA only
-be_and_usa = food_consumption[(food_consumption['country'] == "Belgium") | (food_consumption['country'] == 'USA')]
-
-# Group by country, select consumption column, and compute mean and median
-print(be_and_usa.groupby('country')['consumption'].agg([np.mean, np.median]))
+print(modelList[0].modelId)
 ```
 
-### Mean vs. median
+### Saving a model
 
-In the video, you learned that the mean is the sum of all the data
-points divided by the total number of data points, and the median is the
-middle value of the dataset where 50% of the data is less than the
-median, and 50% of the data is greater than the median. In this
-exercise, you'll compare these two measures of center.
+There may be situations where downloading and storing a model locally
+(i.e. a directory on your computer) is desired. For example, if working
+offline.
 
-`pandas` is loaded as `pd`, `numpy` is loaded as `np`, and
-`food_consumption` is available.
+Practice downloading and saving here. An instance of `AutoModel` is
+already loaded for you under the same name.
 
 **Instructions**
 
-- Import `matplotlib.pyplot` with the alias `plt`.
-- Subset `food_consumption` to get the rows where `food_category` is
-  `'rice'`.
-- Create a histogram of `co2_emission` for rice and show the plot.
-- Use `.agg()` to calculate the mean and median of `co2_emission` for rice.
-
+- Instantiate the model class for the
+  `distilbert-base-uncased-finetuned-sst-2-english` model.
+- Save the model as the `modelId` under "models/".
 
 **Answer**
 
 ```{python}
-# Import matplotlib.pyplot with alias plt
-import matplotlib.pyplot as plt
+modelId = "distilbert-base-uncased-finetuned-sst-2-english"
 
-# Subset for food_category equals rice
-rice_consumption = food_consumption[food_consumption['food_category'] == 'rice']
+# Instantiate the AutoModel class
+model = AutoModel.from_pretrained(modelId)
 
-# Histogram of co2_emission for rice and show plot
-rice_consumption['co2_emission'].hist()
-plt.show()
-
-
-# Subset for food_category equals rice
-rice_consumption = food_consumption[food_consumption['food_category'] == 'rice']
-
-# Calculate mean and median of co2_emission with .agg()
-print(rice_consumption['co2_emission'].agg([np.mean, np.median]))
+# Save the model
+model.save_pretrained(save_directory=f"models/{modelId}")
 ```
 
-### Quartiles, quantiles, and quintiles
+### Inspecting datasets
 
-Quantiles are a great way of summarizing numerical data since they can
-be used to measure center and spread, as well as to get a sense of where
-a data point stands in relation to the rest of the data set. For
-example, you might want to give a discount to the 10% most active users
-on a website.
+The datasets on Hugging Face range in terms of size, information, and
+features. Therefore it's beneficial to inspect it before committing to
+loading a dataset into your environment.
 
-In this exercise, you'll calculate quartiles, quintiles, and deciles,
-which split up a dataset into 4, 5, and 10 pieces, respectively.
+Let's inspect the "derenrich/wikidata-en-descriptions-small" dataset.
 
-Both `pandas` as `pd` and `numpy` as `np` are loaded and
-`food_consumption` is available.
+*Note: this exercise may take a minute due to the dataset size.*
 
 **Instructions**
 
-- Calculate the quartiles of the `co2_emission` column of
-  `food_consumption`.
-
-<!-- -->
-
-- Calculate the six quantiles that split up the data into 5 pieces
-  (quintiles) of the `co2_emission` column of `food_consumption`.
-
-<!-- -->
-
-- Calculate the eleven quantiles of `co2_emission` that split up the
-  data into ten pieces (deciles).
+- Import `load_dataset_builder`.
+- Create the dataset builder to inspect the dataset.
+- Print the features for the dataset.
 
 **Answer**
 
 ```{python}
-# Calculate the quartiles of co2_emission
-print(np.quantile(food_consumption['co2_emission'], [0, 0.25, 0.5, 0.75, 1]))
+# Load the module
+from datasets import load_dataset_builder
 
-# Calculate the quintiles of co2_emission
-print(np.quantile(food_consumption['co2_emission'], [0, 0.2, 0.4, 0.6, 0.8, 1]))
+# Create the dataset builder
+reviews_builder = load_dataset_builder("derenrich/wikidata-en-descriptions-small")
 
-# Calculate the deciles of co2_emission
-print(np.quantile(food_consumption['co2_emission'], np.linspace(0, 1, 11)))
+# Print the features
+print(reviews_builder.info.features)
 ```
 
-### Variance and standard deviation
+### Loading datasets
 
-Variance and standard deviation are two of the most common ways to
-measure the spread of a variable, and you'll practice calculating these
-in this exercise. Spread is important since it can help inform
-expectations. For example, if a salesperson sells a mean of 20 products
-a day, but has a standard deviation of 10 products, there will probably
-be days where they sell 40 products, but also days where they only sell
-one or two. Information like this is important, especially when making
-predictions.
+Hugging Face built the `dataset` package for interacting with datasets.
+There are a lot of convenient functions, including
+`load_dataset_builder` which we just used. After inspecting a dataset to
+ensure its the right one for your project, it's time to load the
+dataset! For this, we can leverage input parameters for `load_dataset`
+to specify which parts of a dataset to load, i.e. the "train" dataset
+for English wikipedia articles.
 
-Both `pandas` as `pd` and `numpy` as `np` are loaded, and
-`food_consumption` is available.
+The `load_dataset` module from the `datasets` package is already loaded
+for you. Note: the `load_dataset` function was modified for the purpose
+of this exercise.
 
 **Instructions**
 
-- Calculate the variance and standard deviation of `co2_emission` for
-  each `food_category` by grouping and aggregating.
-- Import `matplotlib.pyplot` with alias `plt`.
-- Create a histogram of `co2_emission` for the `beef` `food_category`
-  and show the plot.
-- Create a histogram of `co2_emission` for the `eggs` `food_category`
-  and show the plot.
+- Load the `"wikimedia/wikipedia"` dataset and save as `wikipedia`.
 
 **Answer**
 
 ```{python}
-# Print variance and sd of co2_emission for each food_category
-print(food_consumption.groupby('food_category')['co2_emission'].agg([np.var, np.std]))
+# Load the train portion of the dataset
+wikipedia = load_dataset("wikimedia/wikipedia", language="20231101.en", split="train")
 
-# Import matplotlib.pyplot with alias plt
-import matplotlib.pyplot as plt
-
-# Create histogram of co2_emission for food_category 'beef'
-food_consumption[food_consumption['food_category'] == 'beef']['co2_emission'].hist()
-# Show plot
-plt.show()
-
-# Create histogram of co2_emission for food_category 'eggs'
-food_consumption[food_consumption['food_category'] == 'eggs']['co2_emission'].hist()
-# Show plot
-plt.show()
+print(f"The length of the dataset is {len(wikipedia)}")
 ```
 
-### Finding outliers using IQR
+### Manipulating datasets
 
-Outliers can have big effects on statistics like mean, as well as
-statistics that rely on the mean, such as variance and standard
-deviation. Interquartile range, or IQR, is another way of measuring
-spread that's less influenced by outliers. IQR is also often used to
-find outliers. If a value is less than \\\text{Q1} - 1.5 \times
-\text{IQR}\\ or greater than \\\text{Q3} + 1.5 \times \text{IQR}\\, it's
-considered an outlier. In fact, this is how the lengths of the whiskers
-in a `matplotlib` box plot are calculated.
+There will likely be many occasions when you will need to manipulate a
+dataset before using it within a ML task. Two common manipulations are
+filtering and selecting (or slicing). Given the size of these datasets,
+Hugging Face leverages arrow file types.
 
-![Diagram of a box plot showing median, quartiles, and
-outliers](https://assets.datacamp.com/production/repositories/5758/datasets/ca7e6e1832be7ec1842f62891815a9b0488efa83/Screen%20Shot%202020-04-28%20at%2010.04.54%20AM.png)
+This means performing manipulations are slightly different than what you
+might be used to. Fortunately, there's already methods to help with
+this!
 
-In this exercise, you'll calculate IQR and use it to find some outliers.
-`pandas` as `pd` and `numpy` as `np` are loaded and `food_consumption`
-is available.
+The dataset is already loaded for you under `wikipedia`.
 
 **Instructions**
 
-- Calculate the total `co2_emission` per country by grouping by country
-  and taking the sum of `co2_emission`. Store the resulting DataFrame as
-  `emissions_by_country`.
-- Compute the first and third quartiles of `emissions_by_country` and store these as `q1` and `q3`.
-- Calculate the interquartile range of `emissions_by_country` and store it as `iqr`.
-- Calculate the lower and upper cutoffs for outliers of `emissions_by_country`, and store these as lower and `upper`.
-- Subset `emissions_by_country` to get countries with a total emission greater than the `upper` cutoff or a total emission less than the `lower` cutoff.
+- Filter the dataset for rows with the term "football" in the `text`
+  column and save as `filtered`.
+- Select a single example from the filtered dataset and save as
+  `example`.
 
 **Answer**
 
 ```{python}
-# Calculate total co2_emission per country: emissions_by_country
-emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
+# Filter the documents
+filtered = wikipedia.filter(lambda row: "football" in row["text"])
 
-print(emissions_by_country)
+# Create a sample dataset
+example = filtered.select(range(1))
 
-
-# Calculate total co2_emission per country: emissions_by_country
-emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
-
-# Compute the first and third quartiles and IQR of emissions_by_country
-q1 = np.quantile(emissions_by_country, 0.25)
-q3 = np.quantile(emissions_by_country, 0.75)
-iqr = q3 - q1
-
-
-# Calculate total co2_emission per country: emissions_by_country
-emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
-
-# Compute the first and third quantiles and IQR of emissions_by_country
-q1 = np.quantile(emissions_by_country, 0.25)
-q3 = np.quantile(emissions_by_country, 0.75)
-iqr = q3 - q1
-
-# Calculate the lower and upper cutoffs for outliers
-lower = q1 - 1.5 * iqr
-upper = q3 + 1.5 * iqr
-
-
-# Calculate total co2_emission per country: emissions_by_country
-emissions_by_country = food_consumption.groupby('country')['co2_emission'].sum()
-
-# Compute the first and third quantiles and IQR of emissions_by_country
-q1 = np.quantile(emissions_by_country, 0.25)
-q3 = np.quantile(emissions_by_country, 0.75)
-iqr = q3 - q1
-
-# Calculate the lower and upper cutoffs for outliers
-lower = q1 - 1.5 * iqr
-upper = q3 + 1.5 * iqr
-
-# Subset emissions_by_country to find outliers
-outliers = emissions_by_country[(emissions_by_country < lower) | (emissions_by_country > upper)]
-print(outliers)
+print(example[0]["text"])
 ```
 
-## Random Numbers and Probability
+## Building Pipelines with Hugging Face
 
-### Calculating probabilities
+### Getting started with pipelines
 
-You're in charge of the sales team, and it's time for performance
-reviews, starting with Amir. As part of the review, you want to randomly
-select a few of the deals that he's worked on over the past year so that
-you can look at them more deeply. Before you start selecting deals,
-you'll first figure out what the chances are of selecting certain deals.
+Hugging Face has an ecosystem of libraries that allow users to leverage
+tools at different levels. The `pipeline` module from the `transformers`
+library is a great place to get started with performing ML tasks. It
+removes the requirement for training models, allowing for quicker
+experimentation and results. It does this by being a wrapper around
+underlying objects, functions, and processes.
 
-Recall that the probability of an event can be calculated by \$\$
-P(\text{event}) = \frac{\text{# ways event can happen}}{\text{total \#
-of possible outcomes}} \$\$
+Getting started with pipeline can be done by defining a task or model.
+This helps with quick experimentation as you become familiar with the
+library.
 
-Both `pandas` as `pd` and `numpy` as `np` are loaded and `amir_deals` is
-available.
+Create your first pipelines for sentiment analysis. The `input` is a
+sentence string that is already loaded for you.
 
 **Instructions**
 
-- Count the number of deals Amir worked on for each `product` type and
-  store in `counts`.
-- Calculate the probability of selecting a deal for the different product types by dividing the counts by the total number of deals Amir worked on. Save this as `probs`.
-
+- Import `pipeline` from the `transformers` library.
+- Create the first pipeline by specifying the task "sentiment-analysis"
+  and save as `task_pipeline`.
+- Create another pipeline but only specify the model,
+  `distilbert-base-uncased-finetuned-sst-2-english` and save as
+  `model_pipeline`.
+- Predict the sentiment of `input` using both pipelines.
 
 **Answer**
 
 ```{python}
-# Count the deals for each product
-counts = amir_deals['product'].value_counts()
-print(counts)
+# Import pipeline
+from transformers import pipeline
 
+# Create the task pipeline
+task_pipeline = pipeline(task="sentiment-analysis")
 
-# Count the deals for each product
-counts = amir_deals['product'].value_counts()
+# Create the model pipeline
+model_pipeline = pipeline(model="distilbert-base-uncased-finetuned-sst-2-english")
 
-# Calculate probability of picking a deal with each product
-probs = counts / amir_deals.shape[0]
-print(probs)
+# Predict the sentiment
+task_output = task_pipeline(input)
+model_output = model_pipeline(input)
+
+print(f"Sentiment from task_pipeline: {task_output[0]['label']}; Sentiment from model_pipeline: {model_output[0]['label']}")
 ```
 
-### Sampling deals
+### Using AutoClasses
 
-In the previous exercise, you counted the deals Amir worked on. Now it's
-time to randomly pick five deals so that you can reach out to each
-customer and ask if they were satisfied with the service they received.
-You'll try doing this both with and without replacement.
+AutoClasses offer more control for machine learning tasks, and they can
+also be used with `pipeline()` for quick application. It's a nice
+balance of control and convenience.
 
-Additionally, you want to make sure this is done randomly and that it
-can be reproduced in case you get asked how you chose the deals, so
-you'll need to set the random seed before sampling from the deals.
+Continue with the sentiment analysis task and combine AutoClasses with
+the pipeline module.
 
-Both `pandas` as `pd` and `numpy` as `np` are loaded and `amir_deals` is
-available.
+`AutoModelForSequenceClassification` and `AutoTokenizer` from the
+`transformers` library have already been imported for you and the input
+text is saved as `input`.
 
 **Instructions**
 
-- Set the random seed to `24`.
-- Take a sample of `5` deals **without** replacement and store them as
-  `sample_without_replacement`.
-- Take a sample of 5 deals with replacement and save as `sample_with_replacement`.
-
+- Download the model and tokenizer for
+  `"distilbert-base-uncased-finetuned-sst-2-english"` and save as
+  `model` and `tokenizer`, respectively.
+- Create the pipeline using `model` and `tokenizer` and save as
+  `sentimentAnalysis`.
+- Predict the output using `sentimentAnalysis` and save as `output`.
 
 **Answer**
 
 ```{python}
-# Set random seed
-np.random.seed(24)
+# Download the model and tokenizer
+model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 
-# Sample 5 deals without replacement
-sample_without_replacement = amir_deals.sample(5)
-print(sample_without_replacement)
+# Create the pipeline
+sentimentAnalysis = pipeline(task="sentiment-analysis", model=model, tokenizer=tokenizer)
 
+# Predict the sentiment
+output = sentimentAnalysis(input)
 
-# Set random seed
-np.random.seed(24)
-
-# Sample 5 deals with replacement
-sample_with_replacement = amir_deals.sample(5, replace=True)
-print(sample_with_replacement)
+print(f"Sentiment using AutoClasses: {output[0]['label']}")
 ```
 
-### Creating a probability distribution
+### Comparing models with the pipeline
 
-A new restaurant opened a few months ago, and the restaurant's
-management wants to optimize its seating space based on the size of the
-groups that come most often. On one night, there are 10 groups of people
-waiting to be seated at the restaurant, but instead of being called in
-the order they arrived, they will be called randomly. In this exercise,
-you'll investigate the probability of groups of different sizes getting
-picked first. Data on each of the ten groups is contained in the
-`restaurant_groups` DataFrame.
+One of the great benefits of the `pipeline()` module is the ease at
+which you can experiment with different models simply by changing the
+`"model"` input. This is a good way to determine which model works best
+for a particular task or dataset that you are working with.
 
-Remember that expected value can be calculated by multiplying each
-possible outcome with its corresponding probability and taking the sum.
-The `restaurant_groups` data is available. `pandas` is loaded as `pd`,
-`numpy` is loaded as `np`, and `matplotlib.pyplot` is loaded as `plt`.
+Experiment with two sentiment analysis models by creating pipelines for
+each, then using them to predict the sentiment for a sentence.
+
+`pipeline` from the `transformers` library is already loaded for you.
+The example input sentence is saved as `input`.
 
 **Instructions**
 
-- Create a histogram of the `group_size` column of `restaurant_groups`,
-  setting `bins` to `[2, 3, 4, 5, 6]`. Remember to show the plot.
-
-<!-- -->
-
-- Count the number of each `group_size` in `restaurant_groups`, then
-  divide by the number of rows in `restaurant_groups` to calculate the
-  probability of randomly selecting a group of each size. Save as
-  `size_dist`.
-- Reset the index of `size_dist`.
-- Rename the columns of `size_dist` to `group_size` and `prob`.
-
-<!-- -->
-
-- Calculate the expected value of the `size_dist`, which represents the
-  expected group size, by multiplying the `group_size` by the `prob` and
-  taking the sum.
-
-<!-- -->
-
-- Calculate the probability of randomly picking a group of 4 or more
-  people by subsetting for groups of size 4 or more and summing the
-  probabilities of selecting those groups.
+- Create a pipeline for labeling text as positive or negative, using the
+  model `"distilbert-base-uncased-finetuned-sst-2-english"`, and save as
+  `distil_pipeline`.
+- Predict the sentiment for the `input` and save as `distil_output`.
+- Repeat the same steps for the model, `"kwang123/bert-sentiment-analysis"` and save as `bert_pipeline` and `bert_output`.
 
 **Answer**
 
 ```{python}
-# Create a histogram of restaurant_groups and show plot
-restaurant_groups['group_size'].hist(bins=np.linspace(2,6,5))
-plt.show()
+# Create the pipeline
+distil_pipeline = pipeline(task="sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+
+# Predict the sentiment
+distil_output = distil_pipeline(input)
 
 
-# Create probability distribution
-size_dist = restaurant_groups['group_size'].value_counts() / restaurant_groups.shape[0]
+# Create the pipeline
+distil_pipeline = pipeline(task="sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 
-# Reset index and rename columns
-size_dist = size_dist.reset_index()
-size_dist.columns = ['group_size', 'prob']
+# Predict the sentiment
+distil_output = distil_pipeline(input)
 
-print(size_dist)
+# Create the second pipeline and predict the sentiment
+bert_pipeline = pipeline(task="sentiment-analysis", model="kwang123/bert-sentiment-analysis")
+bert_output = bert_pipeline(input)
 
-
-# Create probability distribution
-size_dist = restaurant_groups['group_size'].value_counts() / restaurant_groups.shape[0]
-# Reset index and rename columns
-size_dist = size_dist.reset_index()
-size_dist.columns = ['group_size', 'prob']
-
-# Expected value
-expected_value = np.sum(size_dist['group_size'] * size_dist['prob'])
-print(expected_value)
-
-
-# Create probability distribution
-size_dist = restaurant_groups['group_size'].value_counts() / restaurant_groups.shape[0]
-# Reset index and rename columns
-size_dist = size_dist.reset_index()
-size_dist.columns = ['group_size', 'prob']
-
-# Expected value
-expected_value = np.sum(size_dist['group_size'] * size_dist['prob'])
-
-# Subset groups of size 4 or more
-groups_4_or_more = size_dist[size_dist['group_size'] >= 4]
-
-# Sum the probabilities of groups_4_or_more
-prob_4_or_more = np.sum(groups_4_or_more['prob'])
-print(prob_4_or_more)
+print(f"Bert Output: {bert_output[0]['label']}")
+print(f"Distil Output: {distil_output[0]['label']}")
 ```
 
-### Data back-ups
+### Normalizing text
 
-The sales software used at your company is set to automatically back
-itself up, but no one knows exactly what time the back-ups happen. It is
-known, however, that back-ups happen exactly every 30 minutes. Amir
-comes back from sales meetings at random times to update the data on the
-client he just met with. He wants to know how long he'll have to wait
-for his newly-entered data to get backed up. Use your new knowledge of
-continuous uniform distributions to model this situation and answer
-Amir's questions.
+An important step to performing an NLP task is tokenizing the input
+text. This makes the text more understandable and manageable for the ML
+models, or other algorithms.
+
+Before performing tokenization, it's best to run normalization steps,
+i.e. removing white spaces and accents, lowercasing, and more. Each
+tokenizer available in Hugging Face uses it's own normalization and
+tokenization processes.
+
+Let's take a look at what normalization the `distilbert-base-uncased`
+tokenizer applies to the `input_string`, "HOWDY, how aré yoü?".
 
 **Instructions**
 
-- To model how long Amir will wait for a back-up using a continuous
-  uniform distribution, save his lowest possible wait time as `min_time`
-  and his longest possible wait time as `max_time`. Remember that
-  back-ups happen every 30 minutes.
-
-<!-- -->
-
-- Import `uniform` from `scipy.stats` and calculate the probability that
-  Amir has to wait less than 5 minutes, and store in a variable called
-  `prob_less_than_5`.
-
-<!-- -->
-
-- Calculate the probability that Amir has to wait more than 5 minutes,
-  and store in a variable called `prob_greater_than_5`.
-
-<!-- -->
-
-- Calculate the probability that Amir has to wait between 10 and 20
-  minutes, and store in a variable called `prob_between_10_and_20`.
+- Import `AutoTokenizer` from `transformers`.
+- Download the tokenizer for `distilbert-base-uncased` using
+  `AutoTokenizer` and save as `tokenizer`.
+- Run the normalization process for the `tokenizer`.
 
 **Answer**
 
 ```{python}
-# Min and max wait times for back-up that happens every 30 min
-min_time = 0
-max_time = 30
+# Import the AutoTokenizer
+from transformers import AutoTokenizer
 
-# Import uniform from scipy.stats
-from scipy.stats import uniform
+# Download the tokenizer
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
 
-# Calculate probability of waiting less than 5 mins
-prob_less_than_5 = uniform.cdf(5, min_time, max_time)
-print(prob_less_than_5)
+# Normalize the input string
+output = tokenizer.backend_tokenizer.normalizer.normalize_str(input_string)
 
-
-# Min and max wait times for back-up that happens every 30 min
-min_time = 0
-max_time = 30
-
-# Import uniform from scipy.stats
-from scipy.stats import uniform
-
-# Calculate probability of waiting more than 5 mins
-prob_greater_than_5 = 1 - uniform.cdf(5, min_time, max_time)
-print(prob_greater_than_5)
-
-
-# Min and max wait times for back-up that happens every 30 min
-min_time = 0
-max_time = 30
-
-# Import uniform from scipy.stats
-from scipy.stats import uniform
-
-# Calculate probability of waiting 10-20 mins
-prob_between_10_and_20 = uniform.cdf(20, min_time, max_time) - uniform.cdf(10, min_time, max_time)
-print(prob_between_10_and_20)
+print(output)
 ```
 
-### Simulating wait times
+### Comparing tokenizer output
 
-To give Amir a better idea of how long he'll have to wait, you'll
-simulate Amir waiting 1000 times and create a histogram to show him what
-he should expect. Recall from the last exercise that his minimum wait
-time is 0 minutes and his maximum wait time is 30 minutes.
+Most models in Hugging Face will have an associated tokenizer that will
+help prepare the input data based on what the model expects. After
+normalization, the tokenizer will split the input into smaller chunks
+based on the chosen algorithm. This is known as "pre-tokenization".
 
-As usual, `pandas` as `pd`, `numpy` as `np`, and `matplotlib.pyplot` as
-`plt` are loaded.
+Let's explore the different types of pre-tokenization by performing this
+process with two tokenizers on the same input. We will be using
+`DistilBertTokenizer` and `GPT2Tokenizer` which have already been loaded
+for you. The input text string, "Pineapple on pizza is pretty good, I
+guess" is saved as `input`.
 
 **Instructions**
 
-- Set the random seed to `334`.
-- Import `uniform` from `scipy.stats`.
-- Generate 1000 wait times from the continuous uniform distribution that models Amir's wait time. Save this as `wait_times`.
-- Create a histogram of the simulated wait times and show the plot.
+- Download the `"gpt2"` tokenizer and save as `gpt_tokenizer`.
+- Use `gpt_tokenizer` to create the tokens from the `input`.
+- Repeat the same two steps for
+  `"distilbert-base-uncased-finetuned-sst-2-english"`.
 
 **Answer**
 
 ```{python}
-# Set random seed to 334
-np.random.seed(334)
+# Download the gpt tokenizer
+gpt_tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
-# Import uniform
-from scipy.stats import uniform
+# Tokenize the input
+gpt_tokens = gpt_tokenizer.tokenize(text=input)
 
-# Generate 1000 wait times between 0 and 30 mins
-wait_times = uniform.rvs(0, 30, size=1000)
+# Repeat for distilbert
+distil_tokenizer = DistilBertTokenizer.from_pretrained(
+    "distilbert-base-uncased-finetuned-sst-2-english"
+)
+distil_tokens = distil_tokenizer.tokenize(text=input)
 
-print(wait_times)
-
-
-# Set random seed to 334
-np.random.seed(334)
-
-# Import uniform
-from scipy.stats import uniform
-
-# Generate 1000 wait times between 0 and 30 mins
-wait_times = uniform.rvs(0, 30, size=1000)
-
-# Create a histogram of simulated times and show plot
-plt.hist(wait_times)
-plt.show()
+# Compare the output
+print(f"GPT tokenizer: {gpt_tokens}")
+print(f"DistilBERT tokenizer: {distil_tokens}")
 ```
 
-### Simulating sales deals
+### Grammatical correctness
 
-Assume that Amir usually works on 3 deals per week, and overall, he wins
-30% of deals he works on. Each deal has a binary outcome: it's either
-lost, or won, so you can model his sales deals with a binomial
-distribution. In this exercise, you'll help Amir simulate a year's worth
-of his deals so he can better understand his performance.
+Text classification is the process of labeling an input text into a
+pre-defined category. This can take the form of sentiment - `positive`
+or `negative` - spam detection - `spam` or `not spam` - and even
+grammatical errors.
 
-`numpy` is imported as `np`.
+Explore the use of a `text-classification` pipeline for checking an
+input sentence for grammatical errors.
+
+`pipeline` from the `transformers` library is already loaded for you.
 
 **Instructions**
 
-- Import `binom` from `scipy.stats` and set the random seed to 10.
-
-<!-- -->
-
-- Simulate 1 deal worked on by Amir, who wins 30% of the deals he works
-  on.
-
-<!-- -->
-
-- Simulate a typical week of Amir's deals, or one week of 3 deals.
-
-<!-- -->
-
-- Simulate a year's worth of Amir's deals, or 52 weeks of 3 deals each,
-  and store in `deals`.
-- Print the mean number of deals he won per week.
+- Create a pipeline for the task `text-classification` and use the model
+  `"abdulmatinomotoso/English_Grammar_Checker"`, saving the pipeline as
+  `classifier`.
+- Use the `classifier` to predict the grammatical correctness of the
+  input sentence provided and save as `output`.
 
 **Answer**
 
 ```{python}
-# Import binom from scipy.stats
-from scipy.stats import binom
+# Create a pipeline
+classifier = pipeline(
+    task="text-classification",
+  model="abdulmatinomotoso/English_Grammar_Checker"
+)
 
-# Set random seed to 10
-np.random.seed(10)
+# Predict classification
+output = classifier("I will walk dog")
 
-# Simulate a single deal
-print(binom.rvs(1, 0.3, size=1))
-
-
-# Import binom from scipy.stats
-from scipy.stats import binom
-
-# Set random seed to 10
-np.random.seed(10)
-
-# Simulate 1 week of 3 deals
-print(binom.rvs(3, 0.3, size=1))
-
-
-# Import binom from scipy.stats
-from scipy.stats import binom
-
-# Set random seed to 10
-np.random.seed(10)
-
-# Simulate 52 weeks of 3 deals
-deals = binom.rvs(3, 0.3, size=52)
-
-# Print mean deals won per week
-print(np.mean(deals))
+print(output)
 ```
 
-### Calculating binomial probabilities
+### Question Natural Language Inference
 
-Just as in the last exercise, assume that Amir wins 30% of deals. He
-wants to get an idea of how likely he is to close a certain number of
-deals each week. In this exercise, you'll calculate what the chances are
-of him closing different numbers of deals using the binomial
-distribution.
+Another task under the text classification umbrella is Question Natural
+Language Inference, or QNLI. This determines if a piece of text contains
+enough information to answer a posed question. This requires the model
+to perform logical reasoning which are important for Q&A applications.
 
-`binom` is imported from `scipy.stats`.
+Performing different tasks with the `text-classification` pipeline can
+be done by choosing different models. Each model is trained to predict
+specific labels and optimized for learning different context within a
+text.
+
+`pipeline` from the `transformers` library is already loaded for you.
 
 **Instructions**
 
-- What's the probability that Amir closes all 3 deals in a week? Save
-  this as `prob_3`.
-- What's the probability that Amir closes 1 or fewer deals in a week? Save this as `prob_less_than_or_equal_1`.
-- What's the probability that Amir closes more than 1 deal? Save this as `prob_greater_than_1`.
+- Create a text classification QNLI pipeline using the model
+  `"cross-encoder/qnli-electra-base"` and save as `classifier`.
+- Use this classifier to predict if the text contains information to
+  answer the question.
 
 **Answer**
 
 ```{python}
-# Probability of closing 3 out of 3 deals
-prob_3 = binom.pmf(3, 3, 0.3)
+# Create the pipeline
+classifier = pipeline(task="text-classification", model="cross-encoder/qnli-electra-base")
 
-print(prob_3)
+# Predict the output
+output = classifier("Where is the capital of France?, Brittany is known for their kouign-amann.")
 
-
-# Probability of closing <= 1 deal out of 3 deals
-prob_less_than_or_equal_1 = binom.cdf(1, 3, 0.3)
-
-print(prob_less_than_or_equal_1)
-
-
-# Probability of closing > 1 deal out of 3 deals
-prob_greater_than_1 = 1 - binom.cdf(1, 3, 0.3)
-
-print(prob_greater_than_1)
+print(output)
 ```
 
-### How many sales will be won?
+### Zero-shot classification
 
-Now Amir wants to know how many deals he can expect to close each week
-if his win rate changes. Luckily, you can use your binomial distribution
-knowledge to help him calculate the expected value in different
-situations. Recall from the video that the expected value of a binomial
-distribution can be calculated by \\n \times p\\.
+Zero-shot classification is the ability for a transformer to predict a
+label from a new set of classes which it wasn't originally trained to
+identify. This is possible through its transfer learning capabilities.
+It can be an extremely valuable tool.
+
+Hugging Face `pipeline()` also has a `zero-shot-classification` task.
+These pipelines require both an input text and candidate labels.
+
+Build a zero-shot classifier to predict the label for the input `text`,
+a news headline that has been loaded for you.
+
+`pipelines` from the `transformers` library is already loaded for you.
+Note that we are using our own version of the pipeline function to
+enable you to learn how to use these functions without having to
+download the model.
 
 **Instructions**
 
-- Calculate the expected number of sales out of the **3** he works on
-  that Amir will win each week if he maintains his 30% win rate.
-- Calculate the expected number of sales out of the 3 he works on that
-  he'll win if his win rate drops to 25%.
-- Calculate the expected number of sales out of the 3 he works on that
-  he'll win if his win rate rises to 35%.
+- Build the pipeline for a zero-shot-classification task and save as
+  `classifier`.
+- Create a list of the labels - "politics", "science", "sports" - and
+  save as `candidate_labels`.
+- Predict the label of `text` using the classifier and candidate labels.
 
 **Answer**
 
 ```{python}
-# Expected number won with 30% win rate
-won_30pct = 3 * 0.3
-print(won_30pct)
+# Build the zero-shot classifier
+classifier = pipeline(task="zero-shot-classification", model="facebook/bart-large-mnli")
 
-# Expected number won with 25% win rate
-won_25pct = 3 * 0.25
-print(won_25pct)
+# Create the list
+candidate_labels = ["politics", "science", "sports"]
 
-# Expected number won with 35% win rate
-won_35pct = 3 * 0.35
-print(won_35pct)
+# Predict the output
+output = classifier(text, candidate_labels)
+
+print(f"Top Label: {output['labels'][0]} with score: {output['scores'][0]}")
 ```
 
-## More Distributions and the Central Limit Theorem
+### Summarizing long text
 
-### Distribution of Amir's sales
+Summarization is a useful task for reducing large piece of text into
+something more manageable. This could be beneficial for multiple reasons
+like reducing the amount of time a reader needs to spend to obtain the
+important point of a piece of text.
 
-Since each deal Amir worked on (both won and lost) was different, each
-was worth a different amount of money. These values are stored in the
-`amount` column of `amir_deals` As part of Amir's performance review,
-you want to be able to estimate the probability of him selling different
-amounts, but before you can do this, you'll need to determine what kind
-of distribution the `amount` variable follows.
+The Hugging Face `pipeline()` task, "summarization", builds a s
+summarization pipeline which is a quick way to perform summarization on
+a piece of text. You'll do that by creating a new pipeline and using it
+to summarize a piece of text from a Wikipedia page on Greece.
 
-Both `pandas` as `pd` and `matplotlib.pyplot` as `plt` are loaded and
-`amir_deals` is available.
+`pipeline` from the `transformers` library and the `original_text` have
+already been loaded for you.
 
 **Instructions**
 
-- Create a histogram with 10 bins to visualize the distribution of the
-  `amount`. Show the plot.
+- Create the summarization `pipeline` using the task "summarization" and
+  save as `summarizer`.
+- Use the new pipeline to create a summary of the text and save as
+  `summary_text`.
+- Compare the length of the original and summary text.
 
 **Answer**
 
 ```{python}
-# Histogram of amount with 10 bins and show plot
-amir_deals['amount'].hist(bins=10)
+# Create the summarization pipeline
+summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum")
+
+# Summarize the text
+summary_text = summarizer(original_text)
+
+# Compare the length
+print(f"Original text length: {len(original_text)}")
+print(f"Summary length: {len(summary_text[0]['summary_text'])}")
+```
+
+### Using min_length and max_length
+
+The `pipeline()` function, has two important parameters: `min_length`
+and `max_length`. These are useful for adjusting the length of the
+resulting summary text to be short, longer, or within a certain number
+of words. You might want to do this if there are space constraints
+(i.e., small storage), to enhance readability, or improve the quality of
+the summary.
+
+You'll experiment with a short and long summarizer by setting these two
+parameters to a small range, then a wider range.
+
+`pipeline` from the `transformers` library and the `original_text` have
+already been loaded for you.
+
+**Instructions**
+
+- Create a summarization pipeline using a `min_length` of 1 and
+  `max_length` of 10; save as `short_summarizer`.
+- Summarize the `original_text` using the `short_summarizer` and save
+  the result as `short_summary_text`.
+- Repeat these steps for a summarization pipeline that has a minimum length of 50 and maximum of 150; save as `long_summarizer` and `long_summary_text`, respectively.
+
+**Answer**
+
+```{python}
+# Create a short summarizer
+short_summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum", min_length=1, max_length=10)
+
+# Summarize the input text
+short_summary_text = short_summarizer(original_text)
+
+# Print the short summary
+print(short_summary_text[0]["summary_text"])
+
+
+# Create a short summarizer
+short_summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum", min_length=1, max_length=10)
+
+# Summarize the input text
+short_summary_text = short_summarizer(original_text)
+
+# Print the short summary
+print(short_summary_text[0]["summary_text"])
+
+# Repeat for a long summarizer
+long_summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum", min_length=50, max_length=150)
+
+long_summary_text = long_summarizer(original_text)
+
+# Print the long summary
+print(long_summary_text[0]["summary_text"])
+```
+
+### Summarizing several inputs
+
+Often times, you'll be working on projects where summarization will
+occur over an entire dataset or list of items, not just a single piece
+of text. Fortunately, this can be done by passing in a list of text
+items. This will return a list of summarized texts.
+
+You'll build a final summarization pipeline and use it to summarize a
+list of text items from the `wiki` dataset.
+
+`pipeline` from the `transformers` library and the dataset `wiki` have
+already been loaded for you.
+
+**Instructions**
+
+- Create a list of text items to summarize from the `wiki` dataset and
+  save as `text_to_summarize`.
+- Create a summarization pipeline using a `min_length` of 20 and a
+  `max_length` of 50 and save as `summarizer`.
+- Summarize the first three items in the `text_to_summarize` list
+  setting `truncation` to `True`.
+- Create a for-loop that will print each text summary.
+
+**Answer**
+
+```{python}
+# Create the list
+text_to_summarize = [w["text"] for w in wiki]
+
+# Create the pipeline
+summarizer = pipeline("summarization", model="cnicu/t5-small-booksum", min_length=20, max_length=50)
+
+# Summarize each item in the list
+summaries = summarizer(text_to_summarize[:3], truncation=True)
+
+# Create for-loop to print each summary
+for i in range(0,3):
+  print(f"Summary {i+1}: {summaries[i]['summary_text']}")
+```
+
+## Building Pipelines for Image and Audio
+
+### Processing image data
+
+Just like text inputs, image inputs will typically require
+pre-processing before using with a pipeline for an image-based machine
+learning task, such as image classification. Some common transformations
+include cropping and resizing. Fortunately, Hugging Face provides
+modules for performing these steps via the `image_transforms` module in
+the `transformers` library.
+
+Use this module to apply a transformation to a fashion image.
+
+<img
+src="https://assets.datacamp.com/production/repositories/6536/datasets/b8f0d79998622cb33ed09a3c48f1d20b25712bbe/fashion.jpeg"
+height="500" />
+
+`image_transforms` from the `transformers` library has already been
+loaded for you, as well as the JPEG saved as `original_image`.
+
+**Instructions**
+
+- Convert the image to a numpy array.
+- Crop the center of the image to keep a new 200 x 200 image using
+  `image_transforms` and save as `cropped_image`.
+
+**Answer**
+
+```{python}
+# Create the numpy array
+image_array = np.array(original_image)
+
+# Crop the center of the image
+cropped_image = image_transforms.center_crop(image=image_array, size=(200, 200))
+
+imgplot = plt.imshow(cropped_image)
 plt.show()
 ```
 
-### Probabilities from the normal distribution
+### Creating an image classifier
 
-Since each deal Amir worked on (both won and lost) was different, each
-was worth a different amount of money. These values are stored in the
-`amount` column of `amir_deals` and follow a normal distribution with a
-mean of 5000 dollars and a standard deviation of 2000 dollars. As part
-of his performance metrics, you want to calculate the probability of
-Amir closing a deal worth various amounts.
+Image classification is the process of labeling an image based on the
+content. This is useful for many reasons from improving search to saving
+agriculture crops from disease. It is also helpful for identifying
+clothing items in fashion photos.
 
-`norm` from `scipy.stats` is imported as well as `pandas` as `pd`. The
-DataFrame `amir_deals` is loaded.
+Build an image classification pipeline using a model trained on
+identifying clothing items to classify the image you just cropped.
+
+Both `pipeline` from the `transformers` library and the image, saved as
+`cropped_image`, have already been loaded for you.
 
 **Instructions**
 
-- What's the probability of Amir closing a deal worth less than \$7500?
-
-<!-- -->
-
-- What's the probability of Amir closing a deal worth more than \$1000?
-
-<!-- -->
-
-- What's the probability of Amir closing a deal worth between \$3000 and
-  \$7000?
-
-<!-- -->
-
-- What amount will 25% of Amir's sales be *less than*?
+- Create the image classifier pipeline using the model provided and save
+  as `image_classifier`.
+- Predict the class of the `cropped_image` and save as `results`.
+- Print the predicted `"label"` of the result.
 
 **Answer**
 
 ```{python}
-# Probability of deal < 7500
-prob_less_7500 = norm.cdf(7500, 5000, 2000)
+# Create the pipeline
+image_classifier = pipeline(task="image-classification", 
+                      model="abhishek/autotrain_fashion_mnist_vit_base")
 
-print(prob_less_7500)
+# Predict the class of the image
+results = image_classifier(cropped_image)
 
-
-# Probability of deal > 1000
-prob_over_1000 = 1 - norm.cdf(1000, 5000, 2000)
-
-print(prob_over_1000)
-
-
-# Probability of deal between 3000 and 7000
-prob_3000_to_7000 = norm.cdf(7000, 5000, 2000) - norm.cdf(3000, 5000, 2000)
-
-print(prob_3000_to_7000)
-
-
-# Calculate amount that 25% of deals will be less than
-pct_25 = norm.ppf(0.25, 5000, 2000)
-
-print(pct_25)
+# Print the results
+print(results[0]["label"])
 ```
 
-### Simulating sales under new market conditions
+### Document question and answering
 
-The company's financial analyst is predicting that next quarter, the
-worth of each sale will increase by 20% and the volatility, or standard
-deviation, of each sale's worth will increase by 30%. To see what Amir's
-sales might look like next quarter under these new market conditions,
-you'll simulate new sales amounts using the normal distribution and
-store these in the `new_sales` DataFrame, which has already been created
-for you.
+Document question and answering is a multi-modal ML task which analyzes
+an image of a document, such as a contract, converts it to text, and
+allows a question to be asked about the text. This is useful when there
+are many scanned documents which need to be searched, for example
+financial records.
 
-In addition, `norm` from `scipy.stats`, `pandas` as `pd`, and
-`matplotlib.pyplot` as `plt` are loaded.
+Build a pipeline for document question and answering, then ask the
+pre-loaded question `Which meeting is this document about?`.
+
+`pipeline` from the `transformers` library and the `question` are
+already loaded for you. Note that we are using our own pipeline and dqa
+functions to enable you to learn how to use these functions without some
+of the extra setup. Please visit the Hugging Face documentation to dive
+deeper.
 
 **Instructions**
 
-- Currently, Amir's average sale amount is \$5000. Calculate what his
-  new average amount will be if it increases by 20% and store this in
-  `new_mean`.
-- Amir's current standard deviation is \$2000. Calculate what his new
-  standard deviation will be if it increases by 30% and store this in
-  `new_sd`.
-- Create a variable called `new_sales`, which contains 36 simulated
-  amounts from a normal distribution with a mean of `new_mean` and a
-  standard deviation of `new_sd`.
-- Plot the distribution of the `new_sales` `amount`s using a histogram
-  and show the plot.
+- Create a pipeline for `document-question-answering` and save as `dqa`.
+- Save the path to the image, `document.png`, as `image`.
+- Get the answer for the `question` of the `image` using the `dqa`
+  pipeline and save as `results`.
 
 **Answer**
 
 ```{python}
-# Calculate new average amount
-new_mean = 5000 * 1.2
+# Create the pipeline
+dqa = pipeline(task="document-question-answering", model="naver-clova-ix/donut-base-finetuned-docvqa")
 
-# Calculate new standard deviation
-new_sd = 2000 * 1.3
+# Set the image and question
+image = "document.png"
+question = "Which meeting is this document about?"
 
-# Simulate 36 new sales
-new_sales = norm.rvs(new_mean, new_sd, size=36)
+# Get the answer
+results = dqa(image=image, question=question)
 
-# Create histogram and show
-plt.hist(new_sales)
-plt.show()
+print(results)
 ```
 
-### The CLT in action
+### Visual question and answering
 
-The central limit theorem states that a sampling distribution of a
-sample statistic approaches the normal distribution as you take more
-samples, no matter the original distribution being sampled from.
+Visual question and answering is an ML task that attempts to provide the
+best answer for a question about an image. The model will analyze the
+content of the image and return a label as the answer.
 
-In this exercise, you'll focus on the sample mean and see the central
-limit theorem in action while examining the `num_users` column of
-`amir_deals` more closely, which contains the number of people who
-intend to use the product Amir is selling.
+For example, if asking about the clothes a model is wearing, the model
+may return clothing items as the label. Such a task can be beneficial
+for people who are visually impaired or as a classification method
+(similar to image classification but more open-ended).
 
-`pandas` as `pd`, `numpy` as `np`, and `matplotlib.pyplot` as `plt` are
-loaded and `amir_deals` is available.
+`pipeline` from the `transformers` library and both the `question` and
+`image` are already loaded for you.
 
 **Instructions**
 
-- Create a histogram of the `num_users` column of `amir_deals` and show
-  the plot.
-- Set the seed to `104`.
-- Take a sample of size `20` with replacement from the `num_users` column of `amir_deals`, and take the mean.
-- Repeat this 100 times using a `for` loop and store as `sample_means`. This will take 100 different samples and calculate the mean of each.
-- Convert `sample_means` into a `pd.Series`, create a histogram of the `sample_means`, and show the plot.
+- Create a visual question and answering pipeline by setting the `task`
+  to `visual-question-answering` and save as `vqa`.
+- Use the `vqa` pipeline to get an answer for the `image` and
+  `question`, then save as `results`.
 
 **Answer**
 
 ```{python}
-# Create a histogram of num_users and show
-amir_deals['num_users'].hist()
-plt.show()
+# Create pipeline
+vqa = pipeline(task="visual-question-answering", model="dandelin/vilt-b32-finetuned-vqa")
 
+# Use image and question in vqa
+results = vqa(image=image, question=question)
 
-# Set seed to 104
-np.random.seed(104)
-
-# Sample 20 num_users with replacement from amir_deals
-samp_20 = amir_deals['num_users'].sample(20, replace=True)
-
-# Take mean of samp_20
-print(np.mean(samp_20))
-
-
-# Set seed to 104
-np.random.seed(104)
-
-# Sample 20 num_users with replacement from amir_deals and take mean
-samp_20 = amir_deals['num_users'].sample(20, replace=True)
-np.mean(samp_20)
-
-sample_means = []
-# Loop 100 times
-for i in range(100):
-  # Take sample of 20 num_users
-  samp_20 = amir_deals['num_users'].sample(20, replace=True)
-  # Calculate mean of samp_20
-  samp_20_mean = np.mean(samp_20)
-  # Append samp_20_mean to sample_means
-  sample_means.append(samp_20_mean)
-  
-print(sample_means)
-
-
-# Set seed to 104
-np.random.seed(104)
-
-sample_means = []
-# Loop 100 times
-for i in range(100):
-  # Take sample of 20 num_users
-  samp_20 = amir_deals['num_users'].sample(20, replace=True)
-  # Calculate mean of samp_20
-  samp_20_mean = np.mean(samp_20)
-  # Append samp_20_mean to sample_means
-  sample_means.append(samp_20_mean)
-  
-# Convert to Series and plot histogram
-sample_means_series = pd.Series(sample_means)
-sample_means_series.hist()
-# Show plot
-plt.show()
+print(results)
 ```
 
-### The mean of means
+### Resampling audio files
 
-You want to know what the average number of users (`num_users`) is per
-deal, but you want to know this number for the entire company so that
-you can see if Amir's deals have more or fewer users than the company's
-average deal. The problem is that over the past year, the company has
-worked on more than ten thousand deals, so it's not realistic to compile
-all the data. Instead, you'll estimate the mean by taking several random
-samples of deals, since this is much easier than collecting data from
-everyone in the company.
+The sampling rate of an audio file determines the resolution. The higher
+the sampling rate, the higher the resolution which provides more detail
+about the sound wave itself.
 
-`amir_deals` is available and the user data for all the company's deals
-is available in `all_deals`. Both `pandas` as `pd` and `numpy` as `np`
-are loaded.
+When performing ML tasks it is important to ensure each file has the
+same sampling rate. This will maintain consistency and prepare the audio
+files based on what the model expects regarding number of data points
+per audio file.
+
+The dataset, `audio_file`, and `Audio` from the `datasets` library are
+already loaded for you.
 
 **Instructions**
 
-- Set the random seed to `321`.
-- Take 30 samples (with replacement) of size 20 from
-  `all_deals['num_users']` and take the mean of each sample. Store the
-  sample means in `sample_means`.
-- Print the mean of `sample_means`.
-- Print the mean of the `num_users` column of `amir_deals`.
+- Save the old sampling rate, for reference, as `old_sampling_rate`.
+- Resample the `audio` column to a new rate of 16,000 kHz and save to
+  `audio_file`.
+- Compare the old and new sampling rates.
 
 **Answer**
 
 ```{python}
-# Set seed to 321
-np.random.seed(321)
+# Save the old sampling rate
+old_sampling_rate = audio_file[1]["audio"]["sampling_rate"]
 
-sample_means = []
-# Loop 30 times to take 30 means
-for i in range(30):
-  # Take sample of size 20 from num_users col of all_deals with replacement
-  cur_sample = all_deals['num_users'].sample(20, replace=True)
-  # Take mean of cur_sample
-  cur_mean = np.mean(cur_sample)
-  # Append cur_mean to sample_means
-  sample_means.append(cur_mean)
+# Resample the audio files
+audio_file = audio_file.cast_column("audio", Audio(sampling_rate=16_000))
 
-# Print mean of sample_means
-print(np.mean(sample_means))
-
-# Print mean of num_users in amir_deals
-print(np.mean(amir_deals['num_users']))
+# Compare the old and new sampling rates
+print("Old sampling rate:", old_sampling_rate)
+print("New sampling rate:", audio_file[1]["audio"]["sampling_rate"])
 ```
 
-### Tracking lead responses
+### Filtering out audio files
 
-Your company uses sales software to keep track of new sales leads. It
-organizes them into a queue so that anyone can follow up on one when
-they have a bit of free time. Since the number of lead responses is a
-countable outcome over a period of time, this scenario corresponds to a
-Poisson distribution. On average, Amir responds to 4 leads each day. In
-this exercise, you'll calculate probabilities of Amir responding to
-different numbers of leads.
+There will be occasions where you will want, or need, to filter a
+dataset based on a specific criteria. A common example of this is
+filtering for audio files that are under a specified duration.
+
+The `librosa` and `numpy` libraries, as well as the `dataset`, have
+already been loaded for you. Note: we have modified the `librosa`
+library for the purposes of this exercise, but the functionality and
+pattern is the same.
 
 **Instructions**
 
-- Import `poisson` from `scipy.stats` and calculate the probability that
-  Amir responds to 5 leads in a day, given that he responds to an
-  average of 4.
+- Loop over each `row` of the audio paths in the `dataset` and calculate
+  the duration, appending to the `old_durations_list`.
+- Create a new column called `duration` using `old_durations_list` and
+  save to `dataset`.
+- Filter the `dataset` for audio under 6.0 seconds using a lambda function and the column `duration`; save as `filtered_dataset`.
+- Save the new durations as a list called `new_durations_list`.
 
-<!-- -->
 
-- Amir's coworker responds to an average of 5.5 leads per day. What is
-  the probability that she answers 5 leads in a day?
-
-<!-- -->
-
-- What's the probability that Amir responds to 2 or fewer leads in a
-  day?
-
-<!-- -->
-
-- What's the probability that Amir responds to more than 10 leads in a
-  day?
 
 **Answer**
 
 ```{python}
-# Import poisson from scipy.stats
-from scipy.stats import poisson
+# Create a list of durations
+old_durations_list = []
 
-# Probability of 5 responses
-prob_5 = poisson.pmf(5, 4)
+# Loop over the dataset
+for row in dataset["path"]:
+    old_durations_list.append(librosa.get_duration(path=row))
 
-print(prob_5)
-
-
-# Import poisson from scipy.stats
-from scipy.stats import poisson
-
-# Probability of 5 responses
-prob_coworker = poisson.pmf(5, 5.5)
-
-print(prob_coworker)
+# Create a new column
+dataset = dataset.add_column("duration", old_durations_list)
 
 
-# Import poisson from scipy.stats
-from scipy.stats import poisson
+# Create a list of durations
+old_durations_list = []
 
-# Probability of 2 or fewer responses
-prob_2_or_less = poisson.cdf(2, 4)
+# Loop over the dataset
+for row in dataset["path"]:
+    old_durations_list.append(librosa.get_duration(path=row))
 
-print(prob_2_or_less)
+# Create a new column
+dataset = dataset.add_column("duration", old_durations_list)
+
+# Filter the dataset
+filtered_dataset = dataset.filter(lambda d: d < 6.0, input_columns=["duration"], keep_in_memory=True)
 
 
-# Import poisson from scipy.stats
-from scipy.stats import poisson
+# Create a list of durations
+old_durations_list = []
 
-# Probability of > 10 responses
-prob_over_10 = 1 - poisson.cdf(10, 4)
+# Loop over the dataset
+for row in dataset["path"]:
+    old_durations_list.append(librosa.get_duration(path=row))
 
-print(prob_over_10)
+# Create a new column
+dataset = dataset.add_column("duration", old_durations_list)
+
+# Filter the dataset
+filtered_dataset = dataset.filter(lambda d: d < 6.0, input_columns=["duration"], keep_in_memory=True)
+
+# Save new durations
+new_durations_list = filtered_dataset["duration"]
+
+print("Old duration:", np.mean(old_durations_list)) 
+print("New duration:", np.mean(new_durations_list))
 ```
 
-### Modeling time between leads
+### Classifying audio files
 
-To further evaluate Amir's performance, you want to know how much time
-it takes him to respond to a lead after he opens it. On average, he
-responds to 1 request every 2.5 hours. In this exercise, you'll
-calculate probabilities of different amounts of time passing between
-Amir receiving a lead and sending a response.
+Audio classification can be used for any task that requires labeling a
+piece of audio based on its content. A common use case is identifying
+spoken languages.
+
+You will do just that using an example from the `common_language`
+dataset. The model, `facebook/mms-lid-126` from Meta is a common model
+used for this task given its coverage of languages.
+
+`pipeline` from the `transformers` library as well as the `dataset` have
+been loaded for you. It has been modified for the purposes of this
+exercise.
 
 **Instructions**
 
-- Import `expon` from `scipy.stats`. What's the probability it takes
-  Amir less than an hour to respond to a lead?
-
-<!-- -->
-
-- What's the probability it takes Amir more than 4 hours to respond to a
-  lead?
-
-<!-- -->
-
-- What's the probability it takes Amir 3-4 hours to respond to a lead?
+- Create the pipeline for audio classification and save as `classifier`.
+- Extract the sample audio and sentence and save as `audio` and
+  `sentence`, respectively.
+- Predict the label for the audio using the `classifier` and save as
+  `prediction`.
 
 **Answer**
 
 ```{python}
-# Import expon from scipy.stats
-from scipy.stats import expon
+# Create the pipeline
+classifier = pipeline(task="audio-classification", model="facebook/mms-lid-126")
 
-# Print probability response takes < 1 hour
-print(expon.cdf(1, scale=2.5))
+# Extract the sample
+audio = dataset[1]["audio"]["array"]
+sentence = dataset[1]["sentence"]
 
+# Predict the language
+prediction = classifier(audio)
 
-# Import expon from scipy.stats
-from scipy.stats import expon
-
-# Print probability response takes > 4 hours
-print(1 - expon.cdf(4, scale=2.5))
-
-
-# Import expon from scipy.stats
-from scipy.stats import expon
-
-# Print probability response takes 3-4 hours
-print(expon.cdf(4, scale=2.5) - expon.cdf(3, scale=2.5))
+print(f"Predicted language is '{prediction[0]['label'].upper()}' for the sentence '{sentence}'")
 ```
 
-## Correlation and Experimental Design
+### Instantiating an ASR pipeline
 
-### Relationships between variables
+You've been tasked with generating text from a dataset of audio files.
+Accuracy is important, so you need to make sure you choose the best
+model for automatic speech recognition. You also don't have the time to
+train your own model.
 
-In this chapter, you'll be working with a dataset `world_happiness`
-containing results from the [2019 World Happiness
-Report](https://worldhappiness.report/ed/2019/). The report scores
-various countries based on how happy people in that country are. It also
-ranks each country on various societal aspects such as social support,
-freedom, corruption, and others. The dataset also includes the GDP per
-capita and life expectancy for each country.
+Compare the predictions between the Wav2Vec and Whisper models by
+instantiating two pipelines for automatic speech recognition. You want
+to test out the functionality, so you should try it out on one example
+first.
 
-In this exercise, you'll examine the relationship between a country's
-life expectancy (`life_exp`) and happiness score (`happiness_score`)
-both visually and quantitatively. `seaborn` as `sns`,
-`matplotlib.pyplot` as `plt`, and `pandas` as `pd` are loaded and
-`world_happiness` is available.
+`pipeline` from the `transformers` package is already loaded for you.
+Likewise, the dataset has already been loaded for you, resampled, and
+saved as `english`. One audio file with it's associated metadata is
+saved as `example`.
 
 **Instructions**
 
-- Create a scatterplot of `happiness_score` vs. `life_exp` (without a
-  trendline) using `seaborn`.
-- Show the plot.
-- Create a scatterplot of `happiness_score` vs. `life_exp` **with a linear trendline** using `seaborn`, setting `ci` to `None`.
-- Show the plot.
-- Calculate the correlation between `life_exp` and `happiness_score`. Save this as `cor`.
-
-
+- Instantiate the first automatic speech recognition pipeline for the
+  "wav2vec2" model from Meta.
+- Predict the text from the `example` audio.
+- Repeat these two steps for the "whisper-tiny" model from OpenAI in
+  order to compare the predictions.
 
 **Answer**
 
 ```{python}
-# Create a scatterplot of happiness_score vs. life_exp and show
-sns.scatterplot(x='life_exp', y='happiness_score', data=world_happiness)
+# Create an ASR pipeline using Meta's wav2vec model
+meta_asr = pipeline(task="automatic-speech-recognition", model="facebook/wav2vec2-base-960h")
 
-# Show plot
-plt.show()
+# Predict the text from the example audio
+meta_pred = meta_asr(example["audio"]["array"])["text"].lower()
 
+# Repeat for OpenAI's Whisper model
+open_asr = pipeline("automatic-speech-recognition", model="openai/whisper-tiny")
+open_pred = open_asr(example["audio"]["array"])["text"].lower()
 
-# Create scatterplot of happiness_score vs life_exp with trendline
-sns.lmplot(x='life_exp', y='happiness_score', data=world_happiness, ci=None)
-
-# Show plot
-plt.show()
-
-
-# Create scatterplot of happiness_score vs life_exp with trendline
-sns.lmplot(x='life_exp', y='happiness_score', data=world_happiness, ci=None)
-
-# Show plot
-plt.show()
-
-# Correlation between life_exp and happiness_score
-cor = world_happiness['life_exp'].corr(world_happiness['happiness_score'])
-
-print(cor)
+# Print the prediction from both models
+print("META:", meta_pred)
+print("OPENAI:", open_pred)
 ```
 
-### What can't correlation measure?
+### Word error rate
 
-While the correlation coefficient is a convenient way to quantify the
-strength of a relationship between two variables, it's far from perfect.
-In this exercise, you'll explore one of the caveats of the correlation
-coefficient by examining the relationship between a country's GDP per
-capita (`gdp_per_cap`) and happiness score.
+The Wav2Vec and Whisper models predicted very similar text with only
+some minor differences. Luckily, for the first this example record, you
+have the true sentence for reference. You can use Word Error Rate (WER)
+to determine which model quantitatively performed the best.
 
-`pandas` as `pd`, `matplotlib.pyplot` as `plt`, and `seaborn` as `sns`
-are imported, and `world_happiness` is loaded.
+`load` from the `evaluate` package has already loaded for you. Likewise,
+the `example` and predictions - `meta_pred` and `open_pred` - were saved
+from the previous exercise.
 
 **Instructions**
 
-- Create a `seaborn` scatterplot (without a trendline) showing the
-  relationship between `gdp_per_cap` (on the x-axis) and `life_exp` (on
-  the y-axis).
-- Show the plot
-- Calculate the correlation between `gdp_per_cap` and `life_exp` and store as `cor`.
-
-
+- Instantiate the word error rate metric object and save as `wer`.
+- Save the true sentence of the example as `true_sentence`.
+- Compute the word error rate for each model prediction and save as
+  `meta_wer` and `open_wer`, respectively.
 
 **Answer**
 
 ```{python}
-# Scatterplot of gdp_per_cap and life_exp
-sns.scatterplot(x='gdp_per_cap', y='life_exp', data=world_happiness)
+# Create the word error rate metric
+wer = load("wer")
 
-# Show plot
-plt.show()
+# Save the true sentence of the example
+true_sentence = example["sentence"].lower()
 
+# Compute the wer for each model prediction
+meta_wer = wer.compute(predictions=[meta_pred], references=[true_sentence])
+open_wer = wer.compute(predictions=[open_pred], references=[true_sentence])
 
-# Scatterplot of gdp_per_cap and life_exp
-sns.scatterplot(x='gdp_per_cap', y='life_exp', data=world_happiness)
-
-# Show plot
-plt.show()
-  
-# Correlation between gdp_per_cap and life_exp
-cor = world_happiness['gdp_per_cap'].corr(world_happiness['life_exp'])
-
-print(cor)
+print(f"The WER for the Meta model is {meta_wer} and for the OpenAI model is {open_wer}")
 ```
 
-### Transforming variables
+### Iterating over a dataset
 
-When variables have skewed distributions, they often require a
-transformation in order to form a linear relationship with another
-variable so that correlation can be computed. In this exercise, you'll
-perform a transformation yourself.
+You were able test the functionality and understand the performance on
+one example from the dataset. Now, let's evaluate the models over the
+first 100 audio files to make a final decision about which is best for
+this dataset.
 
-`pandas` as `pd`, `numpy` as `np`, `matplotlib.pyplot` as `plt`, and
-`seaborn` as `sns` are imported, and `world_happiness` is loaded.
+In order to do this efficiently, you can create a function that will
+iterate over the rows of the dataset and yield a set of audio and true
+sentence pairs on each iteration.
+
+The dataset, `english`, ASR models - `meta_asr` and `open_asr` - and
+`pandas` have all been loaded for you.
 
 **Instructions**
 
-- Create a scatterplot of `happiness_score` versus `gdp_per_cap` and
-  calculate the correlation between them.
-
-<!-- -->
-
-- Add a new column to `world_happiness` called `log_gdp_per_cap` that
-  contains the log of `gdp_per_cap`.
-- Create a `seaborn` scatterplot of `happiness_score` versus
-  `log_gdp_per_cap`.
-- Calculate the correlation between `log_gdp_per_cap` and
-  `happiness_score`.
+- Create the `data()` function to iterate over the first 3 rows of the
+  dataset.
+- Within `data()`, predict the text for each audio file using both the
+  `meta_asr` and `open_asr` pipelines.
+- Append the results as a dictionary in the `output` list.
 
 **Answer**
 
 ```{python}
-# Scatterplot of happiness_score vs. gdp_per_cap
-sns.scatterplot(x='gdp_per_cap', y='happiness_score', data=world_happiness)
-plt.show()
+# Create the data function
+def data(n=3):
+    for i in range(n):
+        yield english[i]["audio"]["array"], english[i]["sentence"].lower()
+        
+# Predict the text for the audio file with both models
+output = []
+for audio, sentence in data():
+    meta_pred = meta_asr(audio)["text"].lower()
+    open_pred = open_asr(audio)["text"].lower()
+    # Append to output list
+    output.append({"sentence": sentence, "metaPred": meta_pred, "openPred": open_pred})
 
-# Calculate correlation
-cor = world_happiness['gdp_per_cap'].corr(world_happiness['happiness_score'])
-print(cor)
+output_df = pd.DataFrame(output)
 
 
-# Create log_gdp_per_cap column
-world_happiness['log_gdp_per_cap'] = np.log(world_happiness['gdp_per_cap'])
+# Create the data function
+def data(n=3):
+    for i in range(n):
+        yield english[i]["audio"]["array"], english[i]["sentence"].lower()
+        
+# Predict the text for the audio file with both models
+output = []
+for audio, sentence in data():
+    meta_pred = meta_asr(audio)["text"].lower()
+    open_pred = open_asr(audio)["text"].lower()
+    # Append to output list
+    output.append({"sentence": sentence, "metaPred": meta_pred, "openPred": open_pred})
 
-# Scatterplot of happiness_score vs. log_gdp_per_cap
-sns.scatterplot(x='log_gdp_per_cap', y='happiness_score', data=world_happiness)
-plt.show()
+output_df = pd.DataFrame(output)
 
-# Calculate correlation
-cor = world_happiness['log_gdp_per_cap'].corr(world_happiness['happiness_score'])
-print(cor)
+# Compute the WER for both models
+metaWER = wer.compute(predictions=output_df["metaPred"], references=output_df["sentence"])
+openWER = wer.compute(predictions=output_df["openPred"], references=output_df["sentence"])
+
+# Print the WER
+print(f"The WER for the meta model is {metaWER} and for the open model is {openWER}")
 ```
 
-### Does sugar improve happiness?
+## Fine-tuning and Embeddings
 
-A new column has been added to `world_happiness` called
-`grams_sugar_per_day`, which contains the average amount of sugar eaten
-per person per day in each country. In this exercise, you'll examine the
-effect of a country's average sugar consumption on its happiness score.
+### Preparing a dataset
 
-`pandas` as `pd`, `matplotlib.pyplot` as `plt`, and `seaborn` as `sns`
-are imported, and `world_happiness` is loaded.
+Fine-tuning a model requires several steps including identifying the
+model to fine-tune, preparing the dataset, creating the training loop
+object, then saving the model.
+
+A model trained on English text classification has been identified for
+you, but it's up to you to prepare the imdb dataset in order to
+fine-tune this model to classify the sentiment of movie reviews.
+
+The imdb dataset is already loaded for you and saved as `dataset`.
 
 **Instructions**
 
-- Create a `seaborn` scatterplot showing the relationship between
-  `grams_sugar_per_day` (on the x-axis) and `happiness_score` (on the
-  y-axis).
-- Calculate the correlation between `grams_sugar_per_day` and
-  `happiness_score`.
+- Import `AutoModelForSequenceClassification` and `AutoTokenizer`.
+- Load the model "distilbert-base-uncased-finetuned-sst-2-english" and save as `model`.
+- Create a tokenizer object based on the model and save as `tokenizer`.
+- Use `tokenizer` on the `text` in the dataset and save as `dataset`.
+
+*Note: parameters are auto-set for the tokenizer and map functions to improve performance for this exercise.*
 
 **Answer**
 
 ```{python}
-# Scatterplot of grams_sugar_per_day and happiness_score
-sns.scatterplot(x='grams_sugar_per_day', y='happiness_score', data=world_happiness)
-plt.show()
+# Import modules
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-# Correlation between grams_sugar_per_day and happiness_score
-cor = world_happiness['grams_sugar_per_day'].corr(world_happiness['happiness_score'])
-print(cor)
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+
+# Import modules
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+# Load the model
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+
+# Import modules
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+# Load the model
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+# Use tokenizer on text
+dataset = dataset.map(lambda row: tokenizer(row["text"], padding=True, max_length=512, truncation=True), keep_in_memory=True)
+```
+
+### Building the trainer
+
+To fine-tune a model, it must be trained on new data. This is the
+process of the model learning patterns within a training dataset, then
+evaluating how well it can predict patterns in an unseen test dataset.
+The goal is to help the model build an understanding of patterns while
+also being generalizable to new data yet to be seen.
+
+Build a training object to fine-tune the
+"distilbert-base-uncased-finetuned-sst-2-english" model to be better at
+identifying sentiment of movie reviews.
+
+The `training_data` and `testing_data` dataset are available for you.
+`Trainer` and `TrainingArguments` from `transformers` are also loaded.
+They were modified for the purpose of this exercise.
+
+**Instructions**
+
+- Create the training arguments object setting the output directory to
+  `./results`.
+- Create the trainer object by passing in the model, training arguments,
+  `training_data` and `testing_data`.
+- Start the trainer.
+
+**Answer**
+
+```{python}
+# Create training arguments
+training_args = TrainingArguments(output_dir="./results")
+
+# Create the trainer
+trainer = Trainer(
+    model=model, 
+    args=training_args, 
+    train_dataset=training_data, 
+    eval_dataset=testing_data
+)
+
+# Start the trainer
+trainer.train()
+```
+
+### Using the fine-tuned model
+
+Now that the model is fine-tuned, it can be used within `pipeline`
+tasks, such as for sentiment analysis. At this point, the model is
+typically saved to a local directory (i.e. on your own computer), so a
+local file path is needed.
+
+You'll use the newly fine-tuned distilbert model. There is a sentence,
+"I am a HUGE fan of romantic comedies.", saved as `text_example`.
+
+Note: we are using our own `pipeline` module for this exercise for
+teaching purposes. The model is "saved" (i.e. not really) under the path
+`./fine_tuned_model`.
+
+**Instructions**
+
+- Create the classifier pipeline for `"sentiment-analysis"` and use the
+  model saved in `"./fine_tuned_model"`.
+- Classify the text, `text_example`, and save the results as `results`.
+
+**Answer**
+
+```{python}
+# Create the classifier
+classifier = pipeline(task="sentiment-analysis", model="./fine_tuned_model")
+
+# Classify the text
+results = classifier(text=text_example)
+
+print(results)
+```
+
+### Generating text from a text prompt
+
+Generating text can be accomplished using Auto classes from the Hugging
+Face `transformers` library. It can be a useful method for developing
+content, such as technical documentation or creative material.
+
+You'll walk through the steps to process the text prompt, "Wear
+sunglasses when its sunny because", then generate new text from it.
+
+`AutoTokenizer` and `AutoModelForCausalLM` from the `transformers`
+library are already loaded for you.
+
+**Instructions**
+
+- Get the tokenizer and the model for 'gpt2' then save as `tokenizer`
+  and `model`, respectively.
+- Tokenize the `prompt` using the `tokenizer` and save as `input_ids`.
+- Generate new text using the `model` and save as output.
+- Decode the output and save as `generated_text`.
+
+**Answer**
+
+```{python}
+# Set model name
+model_name = "gpt2"
+
+# Get the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+
+# Set model name
+model_name = "gpt2"
+
+# Get the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+prompt = "Wear sunglasses when its sunny because"
+
+# Tokenize the input
+input_ids = tokenizer.encode(prompt, return_tensors="pt")
+
+
+# Set model name
+model_name = "gpt2"
+
+# Get the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+prompt = "Wear sunglasses when its sunny because"
+
+# Tokenize the input
+input_ids = tokenizer.encode(prompt, return_tensors="pt")
+
+# Generate the text output
+output = model.generate(input_ids, num_return_sequences=1)
+
+# Decode the output
+generated_text = tokenizer.decode(output[0])
+
+print(generated_text)
+```
+
+### Generating a caption for an image
+
+Generating text can be done for modalities other than text, such as
+images. This has a lot of benefits including faster content creation by
+generating captions from images.
+
+You'll create a caption for a fashion image using the Microsoft GIT
+model ("microsoft/git-base-coco").
+
+`AutoProcessor` and `AutoModelForCausalLM` from the `transformers`
+library is already loaded for you along with the `image`.
+
+**Instructions**
+
+- Get the processor and model and save with the same names,
+  respectively.
+- Process the `image` using the processor and save as `pixels`.
+- Generate the output and save as `output`.
+- Decode the `output` and save as `caption`.
+
+**Answer**
+
+```{python}
+# Get the processor and model
+processor = AutoProcessor.from_pretrained("microsoft/git-base-coco")
+model = AutoModelForCausalLM.from_pretrained("microsoft/git-base-coco")
+
+# Process the image
+pixels = processor(images=image, return_tensors="pt").pixel_values
+
+# Generate the ids
+output = model.generate(pixel_values=pixels)
+
+# Decode the output
+caption = processor.batch_decode(output)
+
+print(caption[0])
+```
+
+### Generate embeddings for a sentence
+
+Embeddings are playing an increasingly big role in ML and AI systems. A
+common use case is embedding text to support search.
+
+The `sentence-transformers` package from Hugging Face is useful for
+getting started with embedding models. You'll compare the embedding
+shape from two different models - "all-MiniLM-L6-v2" and
+"sentence-transformers/paraphrase-albert-small-v2". This can determine
+which is better suited for a project (i.e. because of storage
+constraints).
+
+The sentence used for embedding, *"Programmers, do you put your comments
+(before\|after) the related code?"*, is saved as `sentence`.
+
+`SentenceTransformer` from the `sentence-transformers` package was
+already loaded for you.
+
+**Instructions**
+
+- Create the first embedder using `SentenceTransformer` and the model
+  `all-MiniLM-L6-v2`, then save as `embedder1`.
+- Use `embedder1` to generate an embedding for the `sentence` and save
+  as `embedding1`.
+- Repeat these two steps for the `paraphrase-albert-small-v2` model.
+
+**Answer**
+
+```{python}
+# Create the first embedding model
+embedder1 = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Embed the sentence
+embedding1 = embedder1.encode([sentence])
+
+# Create and use second embedding model
+embedder2 = SentenceTransformer("sentence-transformers/paraphrase-albert-small-v2")
+embedding2 = embedder2.encode([sentence])
+ 
+# Compare the shapes
+print(embedding1.shape == embedding2.shape)
+
+# Print embedding1
+print(embedding1)
+```
+
+### Using semantic search
+
+The similarity, or closeness, between a query and the other sentences,
+or documents, is the foundation for semantic search. This is a search
+method which takes into account context and intent of the query.
+Similarity measures, such as cosine similarity, are used to quantify the
+distance between the query and each sentence within the dimensional
+space. Results of a search are based on the closest sentences to the
+query.
+
+You will use semantic search to return the top two Reddit threads
+relevant to the user query, "I need a desktop book reader for Mac".
+
+The `embedder` and `sentence_embeddings` are already loaded for you
+along with `util.semantic_search()`.
+
+**Instructions**
+
+- Generate embeddings for the query and save as `query_embedding`.
+- Use `util.semantic_search` to compare the query embedding with the
+  sentence embeddings and save as `hits`.
+- Complete the `for-loop` to print the results from `hits[0]`.
+
+**Answer**
+
+```{python}
+query = "I need a desktop book reader for Mac"
+
+# Generate embeddings
+query_embedding = embedder.encode([query])[0]
+
+# Compare embeddings
+hits = util.semantic_search(query_embedding, sentence_embeddings, top_k=2)
+
+# Print the top results
+for hit in hits[0]:
+    print(sentences[hit["corpus_id"]], "(Score: {:.4f})".format(hit["score"]))
 ```
